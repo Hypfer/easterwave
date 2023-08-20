@@ -1,0 +1,15 @@
+{
+  "name": "easterwave",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "telegraf": "^4.12.2",
+    "tinyld": "^1.3.4"
+  }
+}
