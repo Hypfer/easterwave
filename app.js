@@ -1,7 +1,5 @@
-const telegraf = require("telegraf");
-const TinyLDClassifier = require("./classifiers/TinyLDClassifier");
-const LanguageDetectClassifier = require("./classifiers/LanguageDetectClassifier");
-const LandeClassifier = require("./classifiers/LandeClassifier");
+import telegraf from "telegraf";
+import Bouncer from "./Bouncer.js";
 
 if (!process.env.BOT_TOKEN) {
     console.error("Missing BOT_TOKEN env variable");
@@ -12,11 +10,8 @@ if (!process.env.BOT_TOKEN) {
 const uidWhitelist = process.env.UID_WHITELIST ? process.env.UID_WHITELIST.split(",") : [];
 
 const bot = new telegraf.Telegraf(process.env.BOT_TOKEN);
-const classifiers = [
-    new TinyLDClassifier(),
-    new LanguageDetectClassifier(),
-    new LandeClassifier()
-]
+
+const bouncer = new Bouncer();
 
 bot.on("message", (ctx) => {
     let text;
@@ -30,20 +25,14 @@ bot.on("message", (ctx) => {
     if (uidWhitelist.includes(ctx.update.message?.from?.id?.toString())) {
         return;
     }
-    
-    if (text !== undefined && text.length >= 10) {
-        const hits = classifiers.map((classifier) => {
-            return classifier.isEnglish(text);
-        }).filter(e => e === true);
-        
-        if (hits.length < classifiers.length / 2) {
-            try {
-                console.log(`Deleting message with text "${text}"`);
-                
-                ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
-            } catch(e) {
-                console.warn("Error while deleting message", e);
-            }
+
+    if (!bouncer.check(text)) {
+        try {
+            console.log(`${new Date().toISOString()} - Deleting message with text "${text}"`);
+
+            ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
+        } catch(e) {
+            console.warn(`${new Date().toISOString()} - Error while deleting message`, e);
         }
     }
 });

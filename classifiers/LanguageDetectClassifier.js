@@ -1,5 +1,5 @@
-const Classifier = require("./Classifier");
-const LanguageDetect = require('languagedetect');
+import LanguageDetect from "languagedetect";
+import Classifier from "./Classifier.js";
 
 class LanguageDetectClassifier extends Classifier {
     constructor() {
@@ -26,4 +26,4 @@ class LanguageDetectClassifier extends Classifier {
     }
 }
 
-module.exports = LanguageDetectClassifier;
+export default LanguageDetectClassifier;

@@ -1,5 +1,5 @@
-const Classifier = require("./Classifier");
-const lande = require("fix-esm").require("lande").default;
+import Classifier from "./Classifier.js";
+import lande from 'lande';
 
 class LandeClassifier extends Classifier {
     isEnglish(str) {
@@ -20,4 +20,4 @@ class LandeClassifier extends Classifier {
     }
 }
 
-module.exports = LandeClassifier;
+export default LandeClassifier;

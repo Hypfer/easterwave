@@ -8,4 +8,4 @@ class Classifier {
     }
 }
 
-module.exports = Classifier;
+export default Classifier;
