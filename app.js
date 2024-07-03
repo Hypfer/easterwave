@@ -1,5 +1,6 @@
 import telegraf from "telegraf";
-import Bouncer from "./Bouncer.js";
+import LangHandler from "./handlers/lang/LangHandler.js";
+import ModHandler from "./handlers/mod/ModHandler.js";
 
 if (!process.env.BOT_TOKEN) {
     console.error("Missing BOT_TOKEN env variable");
@@ -8,33 +9,19 @@ if (!process.env.BOT_TOKEN) {
 }
 
 const uidWhitelist = process.env.UID_WHITELIST ? process.env.UID_WHITELIST.split(",") : [];
-
 const bot = new telegraf.Telegraf(process.env.BOT_TOKEN);
 
-const bouncer = new Bouncer();
+const handlers = [
+    new ModHandler({uidWhitelist: uidWhitelist}),
+    new LangHandler({uidWhitelist: uidWhitelist}),
+];
 
 bot.on("message", (ctx) => {
-    let text;
-
-    if (typeof ctx.update.message?.text === "string") {
-        text = ctx.update.message.text;
-    } else if (typeof ctx.update.message?.caption === "string") {
-        text = ctx.update.message.caption;
-    }
-    
-    if (uidWhitelist.includes(ctx.update.message?.from?.id?.toString())) {
-        return;
-    }
-
-    if (!bouncer.check(text)) {
-        try {
-            console.log(`${new Date().toISOString()} - Deleting message with text "${text}"`);
-
-            ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
-        } catch(e) {
-            console.warn(`${new Date().toISOString()} - Error while deleting message`, e);
-        }
-    }
+    Promise.all(
+        handlers.map(handler => handler.handleMessage(ctx))
+    ).catch(err => {
+        console.warn(`${new Date().toISOString()} - Error while handling message`, err);
+    });
 });
 
 bot.launch();

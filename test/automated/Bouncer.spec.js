@@ -1,6 +1,6 @@
 // noinspection ES6UnusedImports
 
-import Bouncer from "../../Bouncer.js";
+import Bouncer from "../../handlers/lang/Bouncer.js";
 import fs from "fs";
 import * as path from "path";
 import should from "should";

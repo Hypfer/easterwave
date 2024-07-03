@@ -1,11 +1,7 @@
 import * as fs from "fs";
 
-import LandeClassifier from "../../classifiers/LandeClassifier.js";
-import TinyLDClassifier from "../../classifiers/TinyLDClassifier.js";
-import LanguageDetectClassifier from "../../classifiers/LanguageDetectClassifier.js";
-
-
-import EldClassifier from "../../classifiers/EldClassifier.js";
+import TinyLDClassifier from "../../handlers/lang/classifiers/TinyLDClassifier.js";
+import EldClassifier from "../../handlers/lang/classifiers/EldClassifier.js";
 
 const ham = JSON.parse(fs.readFileSync("../res/ham.json").toString())
 const spam = JSON.parse(fs.readFileSync("../res/spam.json").toString())
