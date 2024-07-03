@@ -34,6 +34,9 @@ class ModHandler extends Handler {
                     case "d":
                         multiplier = 60 * 60 * 24;
                         break;
+                    case "w":
+                        multiplier = 60 * 60 * 24 * 7;
+                        break;
                     case "m":
                         multiplier = 60 * 60 * 24 * 30;
                         break;
@@ -44,7 +47,7 @@ class ModHandler extends Handler {
 
                 const duration = parseInt(match.groups.duration) * multiplier;
 
-                
+
                 try {
                     switch(match.groups.command) {
                         case "mute":
