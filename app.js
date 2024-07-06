@@ -1,6 +1,7 @@
 import telegraf from "telegraf";
 import LangHandler from "./handlers/lang/LangHandler.js";
 import ModHandler from "./handlers/mod/ModHandler.js";
+import FunHandler from "./handlers/fun/FunHandler.js";
 
 if (!process.env.BOT_TOKEN) {
     console.error("Missing BOT_TOKEN env variable");
@@ -14,6 +15,7 @@ const bot = new telegraf.Telegraf(process.env.BOT_TOKEN);
 const handlers = [
     new ModHandler({uidWhitelist: uidWhitelist}),
     new LangHandler({uidWhitelist: uidWhitelist}),
+    new FunHandler({})
 ];
 
 bot.on("message", (ctx) => {

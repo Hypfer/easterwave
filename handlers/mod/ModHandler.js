@@ -58,6 +58,7 @@ class ModHandler extends Handler {
                                     until_date: Math.floor(Date.now()/1000) + duration
                                 }
                             );
+                            await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
                             break;
                         case "ban":
                             await ctx.tg.banChatMember(
@@ -65,8 +66,26 @@ class ModHandler extends Handler {
                                 ctx.update.message.reply_to_message.from.id,
                                 Math.floor(Date.now()/1000) + duration
                             );
+                            await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
                             break;
                     }
+                } catch(e) {
+                    console.warn(`${new Date().toISOString()} - Error while executing mod command`, e);
+                }
+            } else if (ctx.update.message.text.includes("!kick")) {
+                try {
+                    await ctx.tg.banChatMember(
+                        ctx.chat.id,
+                        ctx.update.message.reply_to_message.from.id,
+                        Math.floor(Date.now()/1000) + 60 // If for whatever reason the unban fails, it should expire after a minute
+                    );
+
+                    await ctx.tg.unbanChatMember(
+                        ctx.chat.id,
+                        ctx.update.message.reply_to_message.from.id
+                    );
+
+                    await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
                 } catch(e) {
                     console.warn(`${new Date().toISOString()} - Error while executing mod command`, e);
                 }
