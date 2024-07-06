@@ -21,10 +21,10 @@ class FunHandler extends Handler {
                     "/kickme",
                     "/teachme",
                     "/timeout",
-                    "/self-destruct",
+                    "/self_destruct",
                     "/premium",
                     "/premium-support",
-                    "/multi-floor",
+                    "/multi_floor",
                     "/multifloor",
                     "/camera"
                 ].includes(ctx.update.message.text)
