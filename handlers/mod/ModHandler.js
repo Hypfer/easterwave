@@ -4,7 +4,7 @@ import Handler from "../Handler.js";
     El cheapo mod commands. Might be improved in the future. Might also forever stay like this
  */
 
-const MOD_COMMAND_REGEX = /!(?<command>mute|ban)\s+(?<duration>\d+)\s*(?<multiplier>[hdwmy])/;
+const MOD_COMMAND_REGEX = /!(?<command>mute|ban|pmute|pban)\s+(?<duration>\d+)\s*(?<multiplier>[hdwmy]?)/;
 
 class ModHandler extends Handler {
     /**
@@ -43,6 +43,8 @@ class ModHandler extends Handler {
                     case "y":
                         multiplier = 60 * 60 * 24 * 365;
                         break;
+                    default:
+                        multiplier = 60;
                 }
 
                 const duration = parseInt(match.groups.duration) * multiplier;
@@ -58,7 +60,7 @@ class ModHandler extends Handler {
                                     until_date: Math.floor(Date.now()/1000) + duration
                                 }
                             );
-                            await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
+
                             break;
                         case "ban":
                             await ctx.tg.banChatMember(
@@ -66,6 +68,28 @@ class ModHandler extends Handler {
                                 ctx.update.message.reply_to_message.from.id,
                                 Math.floor(Date.now()/1000) + duration
                             );
+
+                            break;
+                        case "pmute": //purgemute
+                            await ctx.tg.restrictChatMember(
+                                ctx.chat.id,
+                                ctx.update.message.reply_to_message.from.id,
+                                {
+                                    until_date: Math.floor(Date.now()/1000) + duration
+                                }
+                            );
+                            
+                            await ctx.tg.deleteMessage(ctx.chat.id, ctx.update.message.reply_to_message.message_id)
+                            await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
+                            break;
+                        case "pban": //purgeban
+                            await ctx.tg.banChatMember(
+                                ctx.chat.id,
+                                ctx.update.message.reply_to_message.from.id,
+                                Math.floor(Date.now()/1000) + duration
+                            );
+                            
+                            await ctx.tg.deleteMessage(ctx.chat.id, ctx.update.message.reply_to_message.message_id)
                             await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
                             break;
                     }
@@ -84,9 +108,25 @@ class ModHandler extends Handler {
                         ctx.chat.id,
                         ctx.update.message.reply_to_message.from.id
                     );
-
-                    await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
                 } catch(e) {
+                    console.warn(`${new Date().toISOString()} - Error while executing mod command`, e);
+                }
+            } else if (ctx.update.message.text.includes("!pkick")) {
+                try {
+                    await ctx.tg.banChatMember(
+                        ctx.chat.id,
+                        ctx.update.message.reply_to_message.from.id,
+                        Math.floor(Date.now() / 1000) + 60 // If for whatever reason the unban fails, it should expire after a minute
+                    );
+
+                    await ctx.tg.unbanChatMember(
+                        ctx.chat.id,
+                        ctx.update.message.reply_to_message.from.id
+                    );
+
+                    await ctx.tg.deleteMessage(ctx.chat.id, ctx.update.message.reply_to_message.message_id)
+                    await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
+                } catch (e) {
                     console.warn(`${new Date().toISOString()} - Error while executing mod command`, e);
                 }
             }
