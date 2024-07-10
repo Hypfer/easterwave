@@ -15,7 +15,7 @@ class FunHandler extends Handler {
 
     async handleMessage(ctx) {
         if (typeof ctx.update.message?.text === "string") {
-            
+
             if (
                 [
                     "/kickme",
@@ -35,10 +35,17 @@ class FunHandler extends Handler {
                         ctx.update.message.from.id,
                         Math.floor(Date.now()/1000) + 60 // If for whatever reason the unban fails, it should expire after a minute
                     );
-                    
+
                     await ctx.tg.unbanChatMember(
                         ctx.chat.id,
                         ctx.update.message.from.id
+                    );
+
+                    await ctx.tg.setMessageReaction(
+                        ctx.chat.id,
+                        ctx.message.message_id,
+                        [{type: "emoji", emoji: "🫡"}],
+                        false
                     );
                 } catch(e) {
                     console.warn(`${new Date().toISOString()} - Error while serving instant justice`, e);

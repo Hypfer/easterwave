@@ -61,12 +61,26 @@ class ModHandler extends Handler {
                                 }
                             );
 
+                            await ctx.tg.setMessageReaction(
+                                ctx.chat.id,
+                                ctx.message.message_id,
+                                [{type: "emoji", emoji: "🫡"}],
+                                false
+                            );
+
                             break;
                         case "ban":
                             await ctx.tg.banChatMember(
                                 ctx.chat.id,
                                 ctx.update.message.reply_to_message.from.id,
                                 Math.floor(Date.now()/1000) + duration
+                            );
+
+                            await ctx.tg.setMessageReaction(
+                                ctx.chat.id,
+                                ctx.message.message_id,
+                                [{type: "emoji", emoji: "🫡"}],
+                                false
                             );
 
                             break;
@@ -78,7 +92,7 @@ class ModHandler extends Handler {
                                     until_date: Math.floor(Date.now()/1000) + duration
                                 }
                             );
-                            
+
                             await ctx.tg.deleteMessage(ctx.chat.id, ctx.update.message.reply_to_message.message_id)
                             await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
                             break;
@@ -88,7 +102,7 @@ class ModHandler extends Handler {
                                 ctx.update.message.reply_to_message.from.id,
                                 Math.floor(Date.now()/1000) + duration
                             );
-                            
+
                             await ctx.tg.deleteMessage(ctx.chat.id, ctx.update.message.reply_to_message.message_id)
                             await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
                             break;
@@ -107,6 +121,13 @@ class ModHandler extends Handler {
                     await ctx.tg.unbanChatMember(
                         ctx.chat.id,
                         ctx.update.message.reply_to_message.from.id
+                    );
+
+                    await ctx.tg.setMessageReaction(
+                        ctx.chat.id,
+                        ctx.message.message_id,
+                        [{type: "emoji", emoji: "🫡"}],
+                        false
                     );
                 } catch(e) {
                     console.warn(`${new Date().toISOString()} - Error while executing mod command`, e);
