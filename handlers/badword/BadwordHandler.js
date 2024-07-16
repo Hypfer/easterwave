@@ -17,6 +17,8 @@ class BadwordHandler extends Handler {
             if(
                 [
                     /(\.{3,})(\n|$)/.test(ctx.update.message.text), //messages or paragraphs ending with ...
+                    /🙈(\n|$)/.test(ctx.update.message.text),
+                    /([😂🤣]){2,}/.test(ctx.update.message.text),
                 ].includes(true)
             ) {
                 if (
