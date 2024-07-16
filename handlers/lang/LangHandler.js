@@ -3,18 +3,18 @@ import Bouncer from "./Bouncer.js";
 
 class LangHandler extends Handler {
     /**
-     * 
+     *
      * @param {object} options
-     * @param {Array<number>} options.uidWhitelist
+     * @param {Array<string>} options.uidWhitelist
      */
     constructor(options) {
         super();
-        
+
         this.uidWhitelist = options.uidWhitelist;
 
         this.bouncer = new Bouncer();
     }
-    
+
     async handleMessage(ctx) {
         let text;
 

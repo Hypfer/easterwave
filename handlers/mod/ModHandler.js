@@ -10,7 +10,7 @@ class ModHandler extends Handler {
     /**
      *
      * @param {object} options
-     * @param {Array<number>} options.uidWhitelist
+     * @param {Array<string>} options.uidWhitelist
      */
     constructor(options) {
         super();
