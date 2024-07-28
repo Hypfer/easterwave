@@ -1,5 +1,13 @@
 import Handler from "../Handler.js";
 
+/*
+ * This handler tries to catch common abusive patterns usually relating to trying to aggressively let people know about their emotions,
+ * do emotional damage or otherwise have an emotional component that has no business being part of the support chat
+ *
+ * Unfortunately, this also comes with some false-positives but what can you do.
+ * At the very least, people playing taboo with the filter could end up with interesting linguistic results
+ */
+
 class BadwordHandler extends Handler {
     /**
      *
@@ -14,11 +22,16 @@ class BadwordHandler extends Handler {
 
     async handleMessage(ctx) {
         if (typeof ctx.update.message?.text === "string") {
-            if(
+            if (
                 [
-                    /(\.{3,}|…)(\n|$)/.test(ctx.update.message.text), //messages or paragraphs ending with ...
-                    /🙈(\n|$)/.test(ctx.update.message.text),
-                    /([😂🤣]){2,}/.test(ctx.update.message.text),
+                    // messages or paragraphs ending with an ellipsis to let everyone know just how unhappy the user is about something
+                    /(\.{3,}|…)(\n|$)/.test(ctx.update.message.text),
+                    // messages or paragraphs ending with the see-no-evil emoji. Mild case but still annoying
+                    /🙈(\n|$)/u.test(ctx.update.message.text),
+                    // messages containing two or more tears of joy emoji in a row. 100% idiot marker
+                    /([😂🤣]){2,}/u.test(ctx.update.message.text),
+                    // messages or paragraphs ending with fake niceness cranked up to 11
+                    /😊(\n|$)/u.test(ctx.update.message.text)
                 ].includes(true)
             ) {
                 if (
