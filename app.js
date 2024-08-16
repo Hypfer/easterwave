@@ -3,6 +3,7 @@ import LangHandler from "./handlers/lang/LangHandler.js";
 import ModHandler from "./handlers/mod/ModHandler.js";
 import FunHandler from "./handlers/fun/FunHandler.js";
 import BadwordHandler from "./handlers/badword/BadwordHandler.js";
+import UserHandler from "./handlers/user/UserHandler.js";
 
 if (!process.env.BOT_TOKEN) {
     console.error("Missing BOT_TOKEN env variable");
@@ -14,6 +15,7 @@ const uidWhitelist = process.env.UID_WHITELIST ? process.env.UID_WHITELIST.split
 const bot = new telegraf.Telegraf(process.env.BOT_TOKEN);
 
 const handlers = [
+    new UserHandler({uidWhitelist: uidWhitelist}),
     new ModHandler({uidWhitelist: uidWhitelist}),
     new LangHandler({uidWhitelist: uidWhitelist}),
     new FunHandler({}),
