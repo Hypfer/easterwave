@@ -5,11 +5,13 @@ class UserHandler extends Handler {
      *
      * @param {object} options
      * @param {Array<string>} options.uidWhitelist
+     * @param {import("../util/Counter")} options.nonsenseCounter
      */
     constructor(options) {
         super();
 
         this.uidWhitelist = options.uidWhitelist;
+        this.nonsenseCounter = options.nonsenseCounter;
     }
 
     async handleMessage(ctx) {
@@ -35,6 +37,8 @@ class UserHandler extends Handler {
                             ctx.chat.id,
                             ctx.message.from.id,
                         );
+                        
+                        this.nonsenseCounter.increment();
                     }
                 }
             }

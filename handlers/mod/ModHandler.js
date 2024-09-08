@@ -11,11 +11,13 @@ class ModHandler extends Handler {
      *
      * @param {object} options
      * @param {Array<string>} options.uidWhitelist
+     * @param {import("../util/Counter")} options.nonsenseCounter
      */
     constructor(options) {
         super();
 
         this.uidWhitelist = options.uidWhitelist;
+        this.nonsenseCounter = options.nonsenseCounter;
     }
 
     async handleMessage(ctx) {
@@ -68,6 +70,7 @@ class ModHandler extends Handler {
                                 false
                             );
 
+                            this.nonsenseCounter.increment();
                             break;
                         case "ban":
                             await ctx.tg.banChatMember(
@@ -83,6 +86,7 @@ class ModHandler extends Handler {
                                 false
                             );
 
+                            this.nonsenseCounter.increment();
                             break;
                         case "pmute": //purgemute
                             await ctx.tg.restrictChatMember(
@@ -95,6 +99,8 @@ class ModHandler extends Handler {
 
                             await ctx.tg.deleteMessage(ctx.chat.id, ctx.update.message.reply_to_message.message_id)
                             await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
+                            
+                            this.nonsenseCounter.increment();
                             break;
                         case "pban": //purgeban
                             await ctx.tg.banChatMember(
@@ -105,6 +111,8 @@ class ModHandler extends Handler {
 
                             await ctx.tg.deleteMessage(ctx.chat.id, ctx.update.message.reply_to_message.message_id)
                             await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
+                            
+                            this.nonsenseCounter.increment();
                             break;
                     }
                 } catch(e) {
@@ -129,6 +137,8 @@ class ModHandler extends Handler {
                         [{type: "emoji", emoji: "🫡"}],
                         false
                     );
+                    
+                    this.nonsenseCounter.increment();
                 } catch(e) {
                     console.warn(`${new Date().toISOString()} - Error while executing mod command`, e);
                 }
@@ -147,6 +157,8 @@ class ModHandler extends Handler {
 
                     await ctx.tg.deleteMessage(ctx.chat.id, ctx.update.message.reply_to_message.message_id)
                     await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
+                    
+                    this.nonsenseCounter.increment();
                 } catch (e) {
                     console.warn(`${new Date().toISOString()} - Error while executing mod command`, e);
                 }

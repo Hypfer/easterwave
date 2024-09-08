@@ -13,11 +13,13 @@ class BadwordHandler extends Handler {
      *
      * @param {object} options
      * @param {Array<string>} options.uidWhitelist
+     * @param {import("../util/Counter")} options.nonsenseCounter
      */
     constructor(options) {
         super();
 
         this.uidWhitelist = options.uidWhitelist;
+        this.nonsenseCounter = options.nonsenseCounter;
     }
 
     async handleMessage(ctx) {
@@ -46,6 +48,8 @@ class BadwordHandler extends Handler {
                 } catch(e) {
                     console.warn(`${new Date().toISOString()} - Error while ensuring community standards`, e);
                 }
+                
+                this.nonsenseCounter.increment();
             }
         }
     }

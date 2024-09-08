@@ -6,11 +6,13 @@ class LangHandler extends Handler {
      *
      * @param {object} options
      * @param {Array<string>} options.uidWhitelist
+     * @param {import("../util/Counter")} options.nonsenseCounter
      */
     constructor(options) {
         super();
 
         this.uidWhitelist = options.uidWhitelist;
+        this.nonsenseCounter = options.nonsenseCounter;
 
         this.bouncer = new Bouncer();
     }
@@ -33,6 +35,7 @@ class LangHandler extends Handler {
                 console.log(`${new Date().toISOString()} - Deleting message with text "${text}"`);
 
                 await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
+                this.nonsenseCounter.increment();
             } catch(e) {
                 console.warn(`${new Date().toISOString()} - Error while deleting message`, e);
             }

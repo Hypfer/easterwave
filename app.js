@@ -4,6 +4,8 @@ import ModHandler from "./handlers/mod/ModHandler.js";
 import FunHandler from "./handlers/fun/FunHandler.js";
 import BadwordHandler from "./handlers/badword/BadwordHandler.js";
 import UserHandler from "./handlers/user/UserHandler.js";
+import NonsenseHandler from "./handlers/nonsense/NonsenseHandler.js";
+import Counter from "./util/Counter.js";
 
 if (!process.env.BOT_TOKEN) {
     console.error("Missing BOT_TOKEN env variable");
@@ -14,12 +16,15 @@ if (!process.env.BOT_TOKEN) {
 const uidWhitelist = process.env.UID_WHITELIST ? process.env.UID_WHITELIST.split(",") : [];
 const bot = new telegraf.Telegraf(process.env.BOT_TOKEN);
 
+const nonsenseCounter = new Counter();
+
 const handlers = [
-    new UserHandler({uidWhitelist: uidWhitelist}),
-    new ModHandler({uidWhitelist: uidWhitelist}),
-    new LangHandler({uidWhitelist: uidWhitelist}),
-    new FunHandler({}),
-    new BadwordHandler({uidWhitelist: uidWhitelist})
+    new UserHandler({uidWhitelist: uidWhitelist, nonsenseCounter: nonsenseCounter}),
+    new ModHandler({uidWhitelist: uidWhitelist, nonsenseCounter: nonsenseCounter}),
+    new LangHandler({uidWhitelist: uidWhitelist, nonsenseCounter: nonsenseCounter}),
+    new FunHandler({nonsenseCounter: nonsenseCounter}),
+    new BadwordHandler({uidWhitelist: uidWhitelist, nonsenseCounter: nonsenseCounter}),
+    new NonsenseHandler({nonsenseCounter: nonsenseCounter})
 ];
 
 bot.on("message", (ctx) => {
