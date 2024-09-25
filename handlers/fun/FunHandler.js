@@ -14,6 +14,8 @@ class FunHandler extends Handler {
     }
 
     async handleMessage(ctx) {
+        return; // Disabled for now due to too many people clicking on it by accident
+        
         if (typeof ctx.update.message?.text === "string") {
 
             if (
