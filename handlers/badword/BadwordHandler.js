@@ -33,7 +33,9 @@ class BadwordHandler extends Handler {
                     // messages containing two or more tears of joy emoji in a row. 100% idiot marker
                     /([😂🤣]){2,}/u.test(ctx.update.message.text),
                     // messages or paragraphs ending with fake niceness cranked up to 11
-                    /😊(\n|$)/u.test(ctx.update.message.text)
+                    /😊(\n|$)/u.test(ctx.update.message.text),
+                    // People not using any punctuation at all are unpleasant to read
+                    isVoiceInput(ctx.update.message.text)
                 ].includes(true)
             ) {
                 if (
@@ -53,6 +55,16 @@ class BadwordHandler extends Handler {
             }
         }
     }
+}
+
+function isVoiceInput(text) {
+    const words = text.match(/\b\w+\b/g) || [];
+    const punctuation = text.match(/[\p{P}\p{S}\n\t]/gu) || [];
+
+    const wordCount = words.length;
+    const punctuationCount = punctuation.filter(e => e !== "%").length;
+    
+    return wordCount > 16 && (punctuationCount === 0 || wordCount / Math.max(2, punctuationCount) > 16);
 }
 
 export default BadwordHandler;
