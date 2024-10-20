@@ -64,7 +64,7 @@ function isVoiceInput(text) {
     const wordCount = words.length;
     const punctuationCount = punctuation.filter(e => e !== "%").length;
     
-    return wordCount > 16 && (punctuationCount === 0 || wordCount / Math.max(2, punctuationCount) > 16);
+    return wordCount > 21 && (punctuationCount === 0 || wordCount / Math.max(2, punctuationCount) > 21);
 }
 
 export default BadwordHandler;
