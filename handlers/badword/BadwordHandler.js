@@ -35,7 +35,9 @@ class BadwordHandler extends Handler {
                     // messages or paragraphs ending with fake niceness cranked up to 11
                     /😊(\n|$)/u.test(ctx.update.message.text),
                     // People not using any punctuation at all are unpleasant to read
-                    isVoiceInput(ctx.update.message.text)
+                    isVoiceInput(ctx.update.message.text),
+                    // Zalgo-style stacked diacritics trying to escape the boundary of the message and rendering on top of others
+                    /\p{M}{5,}/u.test(ctx.update.message.text)
                 ].includes(true)
             ) {
                 if (
@@ -50,7 +52,7 @@ class BadwordHandler extends Handler {
                 } catch(e) {
                     console.warn(`${new Date().toISOString()} - Error while ensuring community standards`, e);
                 }
-                
+
                 this.nonsenseCounter.increment();
             }
         }
@@ -63,7 +65,7 @@ function isVoiceInput(text) {
 
     const wordCount = words.length;
     const punctuationCount = punctuation.filter(e => e !== "%").length;
-    
+
     return wordCount > 21 && (punctuationCount === 0 || wordCount / Math.max(2, punctuationCount) > 21);
 }
 
