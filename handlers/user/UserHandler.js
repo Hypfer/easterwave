@@ -19,7 +19,7 @@ class UserHandler extends Handler {
     }
 
     async handleMessage(ctx) {
-        if (ctx.message?.from && userIsInvalid(ctx.message.from)) {
+        if (ctx.message?.new_chat_members === undefined && ctx.message.from && userIsInvalid(ctx.message.from)) {
             try {
                 await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
             } catch(e) {
@@ -36,13 +36,13 @@ class UserHandler extends Handler {
                         // Kick the user
                         await ctx.tg.banChatMember(
                             ctx.chat.id,
-                            ctx.update.message.reply_to_message.from.id,
+                            member.id,
                             Math.floor(Date.now()/1000) + 60 // If for whatever reason the unban fails, it should expire after a minute
                         );
 
                         await ctx.tg.unbanChatMember(
                             ctx.chat.id,
-                            ctx.update.message.reply_to_message.from.id
+                            member.id
                         );
 
                         this.nonsenseCounter.increment();
@@ -136,7 +136,26 @@ function userIsInvalid(user) {
         ].includes(true)
     }
 
+    // People need a somewhat proper name for the search and other moderation tools to work
+    if (user.username === undefined) {
+        result = result || [
+            user.first_name.length < 2 && (
+                user.last_name === undefined ||
+                SYMBOLS_ONLY_REGEX.test(user.last_name)
+            ),
+
+            SYMBOLS_ONLY_REGEX.test(user.first_name) && (
+                user.last_name === undefined ||
+                SYMBOLS_ONLY_REGEX.test(user.last_name) ||
+                user.last_name.length < 2
+            )
+        ].includes(true)
+    }
+
+
     return result;
 }
+
+const SYMBOLS_ONLY_REGEX = /^[\p{P}\p{S}]+$/u
 
 export default UserHandler;
