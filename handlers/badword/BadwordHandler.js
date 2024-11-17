@@ -37,7 +37,9 @@ class BadwordHandler extends Handler {
                     // People not using any punctuation at all are unpleasant to read
                     isVoiceInput(ctx.update.message.text),
                     // Zalgo-style stacked diacritics trying to escape the boundary of the message and rendering on top of others
-                    /\p{M}{5,}/u.test(ctx.update.message.text)
+                    /\p{M}{5,}/u.test(ctx.update.message.text),
+                    // People do not stop asking for these even _after_ having read the docs explicitly stating that they should not be asking for these or any other robots
+                    /qrevo|maxv|switchbot/i.test(ctx.update.message.text),
                 ].includes(true)
             ) {
                 if (
