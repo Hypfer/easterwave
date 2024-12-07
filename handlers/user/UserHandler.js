@@ -124,7 +124,7 @@ function userIsInvalid(user) {
     ].filter(e => e !== undefined);
     let result = false;
 
-    for (const str in stringsToCheck) {
+    for (const str of stringsToCheck) {
         result = result || [
             // Zalgo-style stacked diacritics trying to escape the boundary of the message and rendering on top of others
             /\p{M}{5,}/u.test(str),
