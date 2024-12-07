@@ -19,16 +19,6 @@ class UserHandler extends Handler {
     }
 
     async handleMessage(ctx) {
-        if (ctx.message?.new_chat_members === undefined && ctx.message.from && userIsInvalid(ctx.message.from)) {
-            try {
-                await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
-            } catch(e) {
-                console.warn(`${new Date().toISOString()} - Error while ensuring community standards`, e);
-            }
-
-            this.nonsenseCounter.increment();
-        }
-
         if (Array.isArray(ctx.message?.new_chat_members)) {
             for (const member of ctx.message.new_chat_members) {
                 if (!member.is_bot) {
@@ -39,7 +29,7 @@ class UserHandler extends Handler {
                             member.id,
                             Math.floor(Date.now()/1000) + 60 // If for whatever reason the unban fails, it should expire after a minute
                         );
-
+                        await sleep(100);
                         await ctx.tg.unbanChatMember(
                             ctx.chat.id,
                             member.id
@@ -80,6 +70,27 @@ class UserHandler extends Handler {
                         console.error("Antiflood failed", e);
                     });
                 }, 30_000);
+            }
+        } else {
+            if (ctx.message.from && userIsInvalid(ctx.message.from)) {
+                try {
+                    await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id);
+
+                    await ctx.tg.banChatMember(
+                        ctx.chat.id,
+                        ctx.message.from.id,
+                        Math.floor(Date.now()/1000) + 60 // If for whatever reason the unban fails, it should expire after a minute
+                    );
+                    await sleep(100);
+                    await ctx.tg.unbanChatMember(
+                        ctx.chat.id,
+                        ctx.message.from.id
+                    );
+                } catch(e) {
+                    console.warn(`${new Date().toISOString()} - Error while ensuring community standards`, e);
+                }
+
+                this.nonsenseCounter.increment();
             }
         }
     }
