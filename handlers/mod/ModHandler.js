@@ -4,7 +4,7 @@ import Handler from "../Handler.js";
     El cheapo mod commands. Might be improved in the future. Might also forever stay like this
  */
 
-const MOD_COMMAND_REGEX = /!(?<command>mute|ban|pmute|pban)\s+(?<duration>\d+)\s*(?<multiplier>[hdwmy]?)/;
+const MOD_COMMAND_REGEX = /!(?<command>mute|ban|pmute|pban|smute|sban)\s+(?<duration>\d+)\s*(?<multiplier>[hdwmy]?)/;
 
 class ModHandler extends Handler {
     /**
@@ -112,6 +112,30 @@ class ModHandler extends Handler {
                             await ctx.tg.deleteMessage(ctx.chat.id, ctx.update.message.reply_to_message.message_id)
                             await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
                             
+                            this.nonsenseCounter.increment();
+                            break;
+                        case "smute":
+                            await ctx.tg.restrictChatMember(
+                                ctx.chat.id,
+                                ctx.update.message.reply_to_message.from.id,
+                                {
+                                    until_date: Math.floor(Date.now()/1000) + duration
+                                }
+                            );
+                            
+                            await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
+
+                            this.nonsenseCounter.increment();
+                            break;
+                        case "sban": 
+                            await ctx.tg.banChatMember(
+                                ctx.chat.id,
+                                ctx.update.message.reply_to_message.from.id,
+                                Math.floor(Date.now()/1000) + duration
+                            );
+                            
+                            await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
+
                             this.nonsenseCounter.increment();
                             break;
                     }
