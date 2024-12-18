@@ -142,8 +142,8 @@ function userIsInvalid(user) {
             // No name at all
             /^\p{White_Space}$/u.test(str),
             str === "", // (How) is this even possible?
-            // Weird invisible non-whitespace characters
-            /[\uFFA0\u3164]/.test(str)
+            // Invisible non-whitespace characters
+            /[\uFFA0\u3164\u00AD]/.test(str)
         ].includes(true)
     }
 
