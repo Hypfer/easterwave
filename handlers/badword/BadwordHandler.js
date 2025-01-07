@@ -39,7 +39,7 @@ class BadwordHandler extends Handler {
                     // Zalgo-style stacked diacritics trying to escape the boundary of the message and rendering on top of others
                     /\p{M}{5,}/u.test(ctx.update.message.text),
                     // People do not stop asking for these even _after_ having read the docs explicitly stating that they should not be asking for these or any other robots
-                    /qrevo|maxv|switchbot/i.test(ctx.update.message.text),
+                    /qrevo|maxv|switchbot|saros|eufy/i.test(ctx.update.message.text),
                 ].includes(true)
             ) {
                 if (
