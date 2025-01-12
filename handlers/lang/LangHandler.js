@@ -18,15 +18,16 @@ class LangHandler extends Handler {
     }
 
     async handleMessage(ctx) {
+        const message = ctx.update.message || ctx.update.edited_message;
         let text;
 
-        if (typeof ctx.update.message?.text === "string") {
-            text = ctx.update.message.text;
-        } else if (typeof ctx.update.message?.caption === "string") {
-            text = ctx.update.message.caption;
+        if (typeof message?.text === "string") {
+            text = message.text;
+        } else if (typeof message?.caption === "string") {
+            text = message.caption;
         }
 
-        if (this.uidWhitelist.includes(ctx.update.message?.from?.id?.toString())) {
+        if (this.uidWhitelist.includes(message?.from?.id?.toString())) {
             return;
         }
 
@@ -34,7 +35,7 @@ class LangHandler extends Handler {
             try {
                 console.log(`${new Date().toISOString()} - Deleting message with text "${text}"`);
 
-                await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
+                await ctx.tg.deleteMessage(ctx.chat.id, message.message_id)
                 this.nonsenseCounter.increment();
             } catch(e) {
                 console.warn(`${new Date().toISOString()} - Error while deleting message`, e);

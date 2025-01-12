@@ -23,34 +23,38 @@ class BadwordHandler extends Handler {
     }
 
     async handleMessage(ctx) {
-        if (typeof ctx.update.message?.text === "string") {
+        const message = ctx.update.message || ctx.update.edited_message;
+
+        if (typeof message?.text === "string") {
             if (
                 [
                     // messages or paragraphs ending with an ellipsis to let everyone know just how unhappy the user is about something
-                    /(\.{3,}|…)(\n|$)/.test(ctx.update.message.text),
+                    /(\.{3,}|…)(\n|$)/.test(message.text),
                     // messages or paragraphs ending with the see-no-evil emoji. Mild case but still annoying
-                    /🙈(\n|$)/u.test(ctx.update.message.text),
+                    /🙈(\n|$)/u.test(message.text),
                     // messages containing two or more tears of joy emoji in a row. 100% idiot marker
-                    /([😂🤣]){2,}/u.test(ctx.update.message.text),
+                    /([😂🤣]){2,}/u.test(message.text),
                     // messages or paragraphs ending with fake niceness cranked up to 11
-                    /😊(\n|$)/u.test(ctx.update.message.text),
+                    /😊(\n|$)/u.test(message.text),
                     // People not using any punctuation at all are unpleasant to read
-                    isVoiceInput(ctx.update.message.text),
+                    isVoiceInput(message.text),
                     // Zalgo-style stacked diacritics trying to escape the boundary of the message and rendering on top of others
-                    /\p{M}{5,}/u.test(ctx.update.message.text),
+                    /\p{M}{5,}/u.test(message.text),
                     // People do not stop asking for these even _after_ having read the docs explicitly stating that they should not be asking for these or any other robots
-                    /qrevo|maxv|switchbot|saros|eufy/i.test(ctx.update.message.text),
+                    /qrevo|maxv|switchbot|saros|eufy/i.test(message.text),
+                    // Another one of those markers of unsolicited opinions
+                    /missing feature/i.test(message.text),
                 ].includes(true)
             ) {
                 if (
-                    ctx.update.message?.from?.id?.toString() !== undefined &&
-                    this.uidWhitelist.includes(ctx.update.message?.from.id.toString())
+                    message?.from?.id?.toString() !== undefined &&
+                    this.uidWhitelist.includes(message.from.id.toString())
                 ) {
                     return;
                 }
 
                 try {
-                    await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
+                    await ctx.tg.deleteMessage(ctx.chat.id, message.message_id);
                 } catch(e) {
                     console.warn(`${new Date().toISOString()} - Error while ensuring community standards`, e);
                 }

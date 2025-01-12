@@ -50,20 +50,21 @@ class NonsenseHandler extends Handler {
      */
     constructor(options) {
         super();
-        
+
         this.nonsenseCounter = options.nonsenseCounter;
     }
 
     async handleMessage(ctx) {
+        const message = ctx.update.message || ctx.update.edited_message;
         let text;
 
-        if (typeof ctx.update.message?.text === "string") {
-            text = ctx.update.message.text;
-        } else if (typeof ctx.update.message?.caption === "string") {
-            text = ctx.update.message.caption;
+        if (typeof message?.text === "string") {
+            text = message.text;
+        } else if (typeof message?.caption === "string") {
+            text = message.caption;
         }
 
-        const match =NONSENSE_COMMAND_REGEX.exec(text);
+        const match = NONSENSE_COMMAND_REGEX.exec(text);
 
         if(match) {
             try {
@@ -74,7 +75,7 @@ class NonsenseHandler extends Handler {
                     case "nonsensecount":
                     case "nonsensecounter":
                         ctx.sendMessage(`Current Daily Nonsense Counter: ${this.nonsenseCounter.counter}. Last Reset: ${this.nonsenseCounter.lastReset}`);
-                        
+
                         break;
                 }
             } catch (e) {

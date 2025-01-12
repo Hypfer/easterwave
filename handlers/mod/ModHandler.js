@@ -21,11 +21,13 @@ class ModHandler extends Handler {
     }
 
     async handleMessage(ctx) {
+        const message = ctx.update.message || ctx.update.edited_message;
+
         if (
-            (ctx.update.message?.from?.id?.toString() !== undefined && this.uidWhitelist.includes(ctx.update.message?.from.id.toString())) &&
-            typeof ctx.update.message?.text === "string" && ctx.update.message.reply_to_message?.from?.id !== undefined
+            (message?.from?.id?.toString() !== undefined && this.uidWhitelist.includes(message.from.id.toString())) &&
+            typeof message?.text === "string" && message.reply_to_message?.from?.id !== undefined
         ) {
-            const match = MOD_COMMAND_REGEX.exec(ctx.update.message.text);
+            const match = MOD_COMMAND_REGEX.exec(message.text);
 
             if (match) {
                 let multiplier;
@@ -57,7 +59,7 @@ class ModHandler extends Handler {
                         case "mute":
                             await ctx.tg.restrictChatMember(
                                 ctx.chat.id,
-                                ctx.update.message.reply_to_message.from.id,
+                                message.reply_to_message.from.id,
                                 {
                                     until_date: Math.floor(Date.now()/1000) + duration
                                 }
@@ -65,7 +67,7 @@ class ModHandler extends Handler {
 
                             await ctx.tg.setMessageReaction(
                                 ctx.chat.id,
-                                ctx.message.message_id,
+                                message.message_id,
                                 [{type: "emoji", emoji: "🫡"}],
                                 false
                             );
@@ -75,66 +77,66 @@ class ModHandler extends Handler {
                         case "ban":
                             await ctx.tg.banChatMember(
                                 ctx.chat.id,
-                                ctx.update.message.reply_to_message.from.id,
+                                message.reply_to_message.from.id,
                                 Math.floor(Date.now()/1000) + duration
                             );
 
                             await ctx.tg.setMessageReaction(
                                 ctx.chat.id,
-                                ctx.message.message_id,
+                                message.message_id,
                                 [{type: "emoji", emoji: "🫡"}],
                                 false
                             );
 
                             this.nonsenseCounter.increment();
                             break;
-                        case "pmute": //purgemute
+                        case "pmute":
                             await ctx.tg.restrictChatMember(
                                 ctx.chat.id,
-                                ctx.update.message.reply_to_message.from.id,
+                                message.reply_to_message.from.id,
                                 {
                                     until_date: Math.floor(Date.now()/1000) + duration
                                 }
                             );
 
-                            await ctx.tg.deleteMessage(ctx.chat.id, ctx.update.message.reply_to_message.message_id)
-                            await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
-                            
+                            await ctx.tg.deleteMessage(ctx.chat.id, message.reply_to_message.message_id)
+                            await ctx.tg.deleteMessage(ctx.chat.id, message.message_id)
+
                             this.nonsenseCounter.increment();
                             break;
                         case "pban": //purgeban
                             await ctx.tg.banChatMember(
                                 ctx.chat.id,
-                                ctx.update.message.reply_to_message.from.id,
+                                message.reply_to_message.from.id,
                                 Math.floor(Date.now()/1000) + duration
                             );
 
-                            await ctx.tg.deleteMessage(ctx.chat.id, ctx.update.message.reply_to_message.message_id)
-                            await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
-                            
+                            await ctx.tg.deleteMessage(ctx.chat.id, message.reply_to_message.message_id)
+                            await ctx.tg.deleteMessage(ctx.chat.id, message.message_id)
+
                             this.nonsenseCounter.increment();
                             break;
                         case "smute":
                             await ctx.tg.restrictChatMember(
                                 ctx.chat.id,
-                                ctx.update.message.reply_to_message.from.id,
+                                message.reply_to_message.from.id,
                                 {
                                     until_date: Math.floor(Date.now()/1000) + duration
                                 }
                             );
-                            
-                            await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
+
+                            await ctx.tg.deleteMessage(ctx.chat.id, message.message_id)
 
                             this.nonsenseCounter.increment();
                             break;
-                        case "sban": 
+                        case "sban":
                             await ctx.tg.banChatMember(
                                 ctx.chat.id,
-                                ctx.update.message.reply_to_message.from.id,
+                                message.reply_to_message.from.id,
                                 Math.floor(Date.now()/1000) + duration
                             );
-                            
-                            await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
+
+                            await ctx.tg.deleteMessage(ctx.chat.id, message.message_id)
 
                             this.nonsenseCounter.increment();
                             break;
@@ -142,46 +144,46 @@ class ModHandler extends Handler {
                 } catch(e) {
                     console.warn(`${new Date().toISOString()} - Error while executing mod command`, e);
                 }
-            } else if (ctx.update.message.text.includes("!kick")) {
+            } else if (message.text.includes("!kick")) {
                 try {
                     await ctx.tg.banChatMember(
                         ctx.chat.id,
-                        ctx.update.message.reply_to_message.from.id,
+                        message.reply_to_message.from.id,
                         Math.floor(Date.now()/1000) + 60 // If for whatever reason the unban fails, it should expire after a minute
                     );
 
                     await ctx.tg.unbanChatMember(
                         ctx.chat.id,
-                        ctx.update.message.reply_to_message.from.id
+                        message.reply_to_message.from.id
                     );
 
                     await ctx.tg.setMessageReaction(
                         ctx.chat.id,
-                        ctx.message.message_id,
+                        message.message_id,
                         [{type: "emoji", emoji: "🫡"}],
                         false
                     );
-                    
+
                     this.nonsenseCounter.increment();
                 } catch(e) {
                     console.warn(`${new Date().toISOString()} - Error while executing mod command`, e);
                 }
-            } else if (ctx.update.message.text.includes("!pkick")) {
+            } else if (message.text.includes("!pkick")) {
                 try {
                     await ctx.tg.banChatMember(
                         ctx.chat.id,
-                        ctx.update.message.reply_to_message.from.id,
+                        message.reply_to_message.from.id,
                         Math.floor(Date.now() / 1000) + 60 // If for whatever reason the unban fails, it should expire after a minute
                     );
 
                     await ctx.tg.unbanChatMember(
                         ctx.chat.id,
-                        ctx.update.message.reply_to_message.from.id
+                        message.reply_to_message.from.id
                     );
 
-                    await ctx.tg.deleteMessage(ctx.chat.id, ctx.update.message.reply_to_message.message_id)
-                    await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id)
-                    
+                    await ctx.tg.deleteMessage(ctx.chat.id, message.reply_to_message.message_id)
+                    await ctx.tg.deleteMessage(ctx.chat.id, message.message_id)
+
                     this.nonsenseCounter.increment();
                 } catch (e) {
                     console.warn(`${new Date().toISOString()} - Error while executing mod command`, e);

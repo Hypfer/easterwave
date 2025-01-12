@@ -27,7 +27,8 @@ const handlers = [
     new NonsenseHandler({nonsenseCounter: nonsenseCounter})
 ];
 
-bot.on("message", (ctx) => {
+// noinspection JSCheckFunctionSignatures
+bot.on(["message", "edited_message"], (ctx) => {
     Promise.all(
         handlers.map(handler => handler.handleMessage(ctx))
     ).catch(err => {

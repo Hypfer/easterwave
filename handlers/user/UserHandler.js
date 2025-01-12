@@ -10,17 +10,19 @@ class UserHandler extends Handler {
      */
     constructor(options) {
         super();
-
+        
         this.uidWhitelist = options.uidWhitelist;
         this.nonsenseCounter = options.nonsenseCounter;
-
+        
         this.antifloodCache = [];
         this.antifloodTimeout = undefined;
     }
 
     async handleMessage(ctx) {
-        if (Array.isArray(ctx.message?.new_chat_members)) {
-            for (const member of ctx.message.new_chat_members) {
+        const message = ctx.update.message || ctx.update.edited_message;
+
+        if (Array.isArray(message?.new_chat_members)) {
+            for (const member of message.new_chat_members) {
                 if (!member.is_bot) {
                     if (userIsInvalid(member)) {
                         // Kick the user
@@ -47,7 +49,7 @@ class UserHandler extends Handler {
                         );
                     }
                 } else {
-                    if (!this.uidWhitelist.includes(ctx.message.from.id.toString())) {
+                    if (!this.uidWhitelist.includes(message.from.id.toString())) {
                         // Ban the bot and whoever added it
                         await ctx.tg.banChatMember(
                             ctx.chat.id,
@@ -55,7 +57,7 @@ class UserHandler extends Handler {
                         );
                         await ctx.tg.banChatMember(
                             ctx.chat.id,
-                            ctx.message.from.id,
+                            message.from.id,
                         );
 
                         this.nonsenseCounter.increment();
@@ -72,19 +74,19 @@ class UserHandler extends Handler {
                 }, 30_000);
             }
         } else {
-            if (ctx.message.from && userIsInvalid(ctx.message.from)) {
+            if (message.from && userIsInvalid(message.from)) {
                 try {
-                    await ctx.tg.deleteMessage(ctx.chat.id, ctx.message.message_id);
+                    await ctx.tg.deleteMessage(ctx.chat.id, message.message_id);
 
                     await ctx.tg.banChatMember(
                         ctx.chat.id,
-                        ctx.message.from.id,
+                        message.from.id,
                         Math.floor(Date.now()/1000) + 60 // If for whatever reason the unban fails, it should expire after a minute
                     );
                     await sleep(100);
                     await ctx.tg.unbanChatMember(
                         ctx.chat.id,
-                        ctx.message.from.id
+                        message.from.id
                     );
                 } catch(e) {
                     console.warn(`${new Date().toISOString()} - Error while ensuring community standards`, e);

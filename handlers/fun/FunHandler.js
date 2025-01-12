@@ -15,9 +15,10 @@ class FunHandler extends Handler {
 
     async handleMessage(ctx) {
         return; // Disabled for now due to too many people clicking on it by accident
-        
-        if (typeof ctx.update.message?.text === "string") {
 
+        const message = ctx.update.message || ctx.update.edited_message;
+
+        if (typeof message?.text === "string") {
             if (
                 [
                     "/kickme",
@@ -29,23 +30,23 @@ class FunHandler extends Handler {
                     "/multi_floor",
                     "/multifloor",
                     "/camera"
-                ].includes(ctx.update.message.text)
+                ].includes(message.text)
             ) {
                 try {
                     await ctx.tg.banChatMember(
                         ctx.chat.id,
-                        ctx.update.message.from.id,
+                        message.from.id,
                         Math.floor(Date.now()/1000) + 60 // If for whatever reason the unban fails, it should expire after a minute
                     );
 
                     await ctx.tg.unbanChatMember(
                         ctx.chat.id,
-                        ctx.update.message.from.id
+                        message.from.id
                     );
 
                     await ctx.tg.setMessageReaction(
                         ctx.chat.id,
-                        ctx.message.message_id,
+                        message.message_id,
                         [{type: "emoji", emoji: "🫡"}],
                         false
                     );
