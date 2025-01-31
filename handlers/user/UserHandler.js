@@ -74,25 +74,36 @@ class UserHandler extends Handler {
                 }, 30_000);
             }
         } else {
-            if (message.from && userIsInvalid(message.from)) {
-                try {
-                    await ctx.tg.deleteMessage(ctx.chat.id, message.message_id);
+            if (message.from) {
+                if (userIsInvalid(message.from)) {
+                    try {
+                        await ctx.tg.deleteMessage(ctx.chat.id, message.message_id);
 
-                    await ctx.tg.banChatMember(
-                        ctx.chat.id,
-                        message.from.id,
-                        Math.floor(Date.now()/1000) + 60 // If for whatever reason the unban fails, it should expire after a minute
-                    );
-                    await sleep(100);
-                    await ctx.tg.unbanChatMember(
-                        ctx.chat.id,
-                        message.from.id
-                    );
-                } catch(e) {
-                    console.warn(`${new Date().toISOString()} - Error while ensuring community standards`, e);
+                        await ctx.tg.banChatMember(
+                            ctx.chat.id,
+                            message.from.id,
+                            Math.floor(Date.now()/1000) + 60 // If for whatever reason the unban fails, it should expire after a minute
+                        );
+                        await sleep(100);
+                        await ctx.tg.unbanChatMember(
+                            ctx.chat.id,
+                            message.from.id
+                        );
+                    } catch(e) {
+                        console.warn(`${new Date().toISOString()} - Error while ensuring community standards`, e);
+                    }
+                } else if (message.from.username === "Channel_Bot") {
+                    // That weird telegram premium feature allowing users to hide behind channel identities
+                    try {
+                        await ctx.tg.deleteMessage(ctx.chat.id, message.message_id);
+                        
+                        // We can't ban them because we don't know who they are :|
+                    } catch(e) {
+                        console.warn(`${new Date().toISOString()} - Error while ensuring community standards`, e);
+                    }
+                    
+                    this.nonsenseCounter.increment();
                 }
-
-                this.nonsenseCounter.increment();
             }
         }
     }
