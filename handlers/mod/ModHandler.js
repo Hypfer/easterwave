@@ -1,194 +1,187 @@
 import Handler from "../Handler.js";
 
-/*
-    El cheapo mod commands. Might be improved in the future. Might also forever stay like this
- */
-
 const MOD_COMMAND_REGEX = /!(?<command>mute|ban|pmute|pban|smute|sban)\s+(?<duration>\d+)\s*(?<multiplier>[hdwmy]?)/;
+
+const TIME_MULTIPLIERS = {
+    h: 60 * 60,
+    d: 60 * 60 * 24,
+    w: 60 * 60 * 24 * 7,
+    m: 60 * 60 * 24 * 30,
+    y: 60 * 60 * 24 * 365,
+    '': 60 // default to minutes
+};
+
+const COMMANDS = {
+    mute: {
+        action: 'restrict',
+        federated: true,
+        deleteCommand: false,
+        deleteTarget: false
+    },
+    ban: {
+        action: 'ban',
+        federated: true,
+        deleteCommand: false,
+        deleteTarget: false
+    },
+    pmute: {
+        action: 'restrict',
+        federated: true,
+        deleteCommand: true,
+        deleteTarget: true
+    },
+    pban: {
+        action: 'ban',
+        federated: true,
+        deleteCommand: true,
+        deleteTarget: true
+    },
+    smute: {
+        action: 'restrict',
+        federated: true,
+        deleteCommand: true,
+        deleteTarget: false
+    },
+    sban: {
+        action: 'ban',
+        federated: true,
+        deleteCommand: true,
+        deleteTarget: false
+    }
+};
 
 class ModHandler extends Handler {
     /**
-     *
      * @param {object} options
      * @param {Array<string>} options.uidWhitelist
+     * @param {Array<number>} options.federation
      * @param {import("../util/Counter")} options.nonsenseCounter
      */
     constructor(options) {
         super();
-
         this.uidWhitelist = options.uidWhitelist;
+        this.federation = options.federation;
         this.nonsenseCounter = options.nonsenseCounter;
+    }
+
+    async restrictMember(ctx, chatId, userId, duration) {
+        return ctx.tg.restrictChatMember(
+            chatId,
+            userId,
+            {
+                until_date: Math.floor(Date.now()/1000) + duration
+            }
+        );
+    }
+
+    async banMember(ctx, chatId, userId, duration) {
+        return ctx.tg.banChatMember(
+            chatId,
+            userId,
+            Math.floor(Date.now()/1000) + duration
+        );
+    }
+
+    async handleKick(ctx, message, isPurge = false) {
+        try {
+            await ctx.tg.banChatMember(
+                ctx.chat.id,
+                message.reply_to_message.from.id,
+                Math.floor(Date.now()/1000) + 60  // If for whatever reason the unban fails, it should expire after a minute
+            );
+
+            await ctx.tg.unbanChatMember(
+                ctx.chat.id,
+                message.reply_to_message.from.id
+            );
+
+            if (isPurge) {
+                await ctx.tg.deleteMessage(ctx.chat.id, message.reply_to_message.message_id);
+                await ctx.tg.deleteMessage(ctx.chat.id, message.message_id);
+            } else {
+                await ctx.tg.setMessageReaction(
+                    ctx.chat.id,
+                    message.message_id,
+                    [{type: "emoji", emoji: "🫡"}],
+                    false
+                );
+            }
+
+            this.nonsenseCounter.increment();
+        } catch(e) {
+            console.warn(`${new Date().toISOString()} - Error while executing kick command`, e);
+        }
+    }
+
+    async executeModCommand(ctx, message, command, duration) {
+        const commandConfig = COMMANDS[command];
+        const actionFunc = commandConfig.action === 'restrict' ? this.restrictMember : this.banMember;
+
+        try {
+            await actionFunc.call(
+                this,
+                ctx,
+                ctx.chat.id,
+                message.reply_to_message.from.id,
+                duration
+            );
+            
+            if (commandConfig.deleteTarget) {
+                await ctx.tg.deleteMessage(ctx.chat.id, message.reply_to_message.message_id);
+            }
+
+            if (commandConfig.deleteCommand) {
+                await ctx.tg.deleteMessage(ctx.chat.id, message.message_id);
+            } else {
+                await ctx.tg.setMessageReaction(
+                    ctx.chat.id,
+                    message.message_id,
+                    [{type: "emoji", emoji: "🫡"}],
+                    false
+                );
+            }
+
+            this.nonsenseCounter.increment();
+            
+            if (commandConfig.federated) {
+                this.federation
+                    .filter(fedId => fedId !== ctx.chat.id)
+                    .forEach(fedId => {
+                        actionFunc.call(this, ctx, fedId, message.reply_to_message.from.id, duration)
+                            .catch(e => console.warn(
+                                `${new Date().toISOString()} - Federation action failed for ${fedId}:`,
+                                e
+                            ));
+                    });
+            }
+        } catch(e) {
+            console.warn(`${new Date().toISOString()} - Error while executing mod command`, e);
+        }
     }
 
     async handleMessage(ctx) {
         const message = ctx.update.message || ctx.update.edited_message;
 
         if (
-            (message?.from?.id?.toString() !== undefined && this.uidWhitelist.includes(message.from.id.toString())) &&
-            typeof message?.text === "string" && message.reply_to_message?.from?.id !== undefined
+            !(message?.from?.id?.toString() !== undefined &&
+                this.uidWhitelist.includes(message.from.id.toString()) &&
+                typeof message?.text === "string" &&
+                message.reply_to_message?.from?.id !== undefined)
         ) {
-            const match = MOD_COMMAND_REGEX.exec(message.text);
+            return;
+        }
 
-            if (match) {
-                let multiplier;
-                switch (match.groups.multiplier) {
-                    case "h":
-                        multiplier = 60 * 60;
-                        break;
-                    case "d":
-                        multiplier = 60 * 60 * 24;
-                        break;
-                    case "w":
-                        multiplier = 60 * 60 * 24 * 7;
-                        break;
-                    case "m":
-                        multiplier = 60 * 60 * 24 * 30;
-                        break;
-                    case "y":
-                        multiplier = 60 * 60 * 24 * 365;
-                        break;
-                    default:
-                        multiplier = 60;
-                }
+        const match = MOD_COMMAND_REGEX.exec(message.text);
 
-                const duration = parseInt(match.groups.duration) * multiplier;
+        if (match) {
+            const multiplier = TIME_MULTIPLIERS[match.groups.multiplier] || TIME_MULTIPLIERS[''];
+            const duration = parseInt(match.groups.duration) * multiplier;
 
-
-                try {
-                    switch(match.groups.command) {
-                        case "mute":
-                            await ctx.tg.restrictChatMember(
-                                ctx.chat.id,
-                                message.reply_to_message.from.id,
-                                {
-                                    until_date: Math.floor(Date.now()/1000) + duration
-                                }
-                            );
-
-                            await ctx.tg.setMessageReaction(
-                                ctx.chat.id,
-                                message.message_id,
-                                [{type: "emoji", emoji: "🫡"}],
-                                false
-                            );
-
-                            this.nonsenseCounter.increment();
-                            break;
-                        case "ban":
-                            await ctx.tg.banChatMember(
-                                ctx.chat.id,
-                                message.reply_to_message.from.id,
-                                Math.floor(Date.now()/1000) + duration
-                            );
-
-                            await ctx.tg.setMessageReaction(
-                                ctx.chat.id,
-                                message.message_id,
-                                [{type: "emoji", emoji: "🫡"}],
-                                false
-                            );
-
-                            this.nonsenseCounter.increment();
-                            break;
-                        case "pmute":
-                            await ctx.tg.restrictChatMember(
-                                ctx.chat.id,
-                                message.reply_to_message.from.id,
-                                {
-                                    until_date: Math.floor(Date.now()/1000) + duration
-                                }
-                            );
-
-                            await ctx.tg.deleteMessage(ctx.chat.id, message.reply_to_message.message_id)
-                            await ctx.tg.deleteMessage(ctx.chat.id, message.message_id)
-
-                            this.nonsenseCounter.increment();
-                            break;
-                        case "pban": //purgeban
-                            await ctx.tg.banChatMember(
-                                ctx.chat.id,
-                                message.reply_to_message.from.id,
-                                Math.floor(Date.now()/1000) + duration
-                            );
-
-                            await ctx.tg.deleteMessage(ctx.chat.id, message.reply_to_message.message_id)
-                            await ctx.tg.deleteMessage(ctx.chat.id, message.message_id)
-
-                            this.nonsenseCounter.increment();
-                            break;
-                        case "smute":
-                            await ctx.tg.restrictChatMember(
-                                ctx.chat.id,
-                                message.reply_to_message.from.id,
-                                {
-                                    until_date: Math.floor(Date.now()/1000) + duration
-                                }
-                            );
-
-                            await ctx.tg.deleteMessage(ctx.chat.id, message.message_id)
-
-                            this.nonsenseCounter.increment();
-                            break;
-                        case "sban":
-                            await ctx.tg.banChatMember(
-                                ctx.chat.id,
-                                message.reply_to_message.from.id,
-                                Math.floor(Date.now()/1000) + duration
-                            );
-
-                            await ctx.tg.deleteMessage(ctx.chat.id, message.message_id)
-
-                            this.nonsenseCounter.increment();
-                            break;
-                    }
-                } catch(e) {
-                    console.warn(`${new Date().toISOString()} - Error while executing mod command`, e);
-                }
-            } else if (message.text.includes("!kick")) {
-                try {
-                    await ctx.tg.banChatMember(
-                        ctx.chat.id,
-                        message.reply_to_message.from.id,
-                        Math.floor(Date.now()/1000) + 60 // If for whatever reason the unban fails, it should expire after a minute
-                    );
-
-                    await ctx.tg.unbanChatMember(
-                        ctx.chat.id,
-                        message.reply_to_message.from.id
-                    );
-
-                    await ctx.tg.setMessageReaction(
-                        ctx.chat.id,
-                        message.message_id,
-                        [{type: "emoji", emoji: "🫡"}],
-                        false
-                    );
-
-                    this.nonsenseCounter.increment();
-                } catch(e) {
-                    console.warn(`${new Date().toISOString()} - Error while executing mod command`, e);
-                }
-            } else if (message.text.includes("!pkick")) {
-                try {
-                    await ctx.tg.banChatMember(
-                        ctx.chat.id,
-                        message.reply_to_message.from.id,
-                        Math.floor(Date.now() / 1000) + 60 // If for whatever reason the unban fails, it should expire after a minute
-                    );
-
-                    await ctx.tg.unbanChatMember(
-                        ctx.chat.id,
-                        message.reply_to_message.from.id
-                    );
-
-                    await ctx.tg.deleteMessage(ctx.chat.id, message.reply_to_message.message_id)
-                    await ctx.tg.deleteMessage(ctx.chat.id, message.message_id)
-
-                    this.nonsenseCounter.increment();
-                } catch (e) {
-                    console.warn(`${new Date().toISOString()} - Error while executing mod command`, e);
-                }
-            }
+            await this.executeModCommand(ctx, message, match.groups.command, duration);
+        } else if (message.text.includes("!kick")) {
+            await this.handleKick(ctx, message, false);
+        } else if (message.text.includes("!pkick")) {
+            await this.handleKick(ctx, message, true);
         }
     }
 }
