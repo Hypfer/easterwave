@@ -1,4 +1,5 @@
 import Handler from "../Handler.js";
+import {sleep} from "../../util/tools.js";
 
 const MOD_COMMAND_REGEX = /!(?<command>mute|ban|pmute|pban|smute|sban)\s+(?<duration>\d+)\s*(?<multiplier>[hdwmy]?)/;
 
@@ -142,17 +143,19 @@ class ModHandler extends Handler {
             }
 
             this.nonsenseCounter.increment();
-            
+
             if (commandConfig.federated) {
-                this.federation
-                    .filter(fedId => fedId !== ctx.chat.id)
-                    .forEach(fedId => {
-                        actionFunc.call(this, ctx, fedId, message.reply_to_message.from.id, duration)
-                            .catch(e => console.warn(
-                                `${new Date().toISOString()} - Federation action failed for ${fedId}:`,
-                                e
-                            ));
-                    });
+                for (const fedId of this.federation.filter(fedId => fedId !== ctx.chat.id)) {
+                    try {
+                        await actionFunc(ctx, fedId, message.reply_to_message.from.id, duration);
+                        await sleep(1000);
+                    } catch (e) {
+                        console.warn(
+                            `${new Date().toISOString()} - Federation action failed for ${fedId}:`,
+                            e
+                        );
+                    }
+                }
             }
         } catch(e) {
             console.warn(`${new Date().toISOString()} - Error while executing mod command`, e);
