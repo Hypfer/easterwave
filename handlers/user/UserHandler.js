@@ -156,7 +156,9 @@ function userIsInvalid(user) {
             /^\p{White_Space}$/u.test(str),
             str === "", // (How) is this even possible?
             // Invisible non-whitespace characters
-            /[\uFFA0\u3164\u00AD]/.test(str)
+            /[\uFFA0\u3164\u00AD]/.test(str),
+            // Some other unicode fuckery
+            /[\u206A\u206C\u206E]/.test(str)
         ].includes(true)
     }
 
