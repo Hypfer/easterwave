@@ -44,6 +44,11 @@ class BadwordHandler extends Handler {
                     /qrevo|maxv|switchbot|saros|eufy/i.test(message.text),
                     // Another one of those markers of unsolicited opinions
                     /missing feature/i.test(message.text),
+                    // More markers of default communication
+                    /(hello|hi|hey) (dear )?(valetudo )?(community|everyone|team|all|friends|people)/i.test(message.text),
+                    /anyone (has|have|here|tried|tries|ever|knows|know)/i.test(message.text),
+                    // No hello
+                    /^(hello|hi|hey)\s*(community|everyone|team|all|friends|friend|people)?$/i.test(message.text)
                 ].includes(true)
             ) {
                 if (
