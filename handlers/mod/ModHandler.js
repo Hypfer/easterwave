@@ -83,7 +83,7 @@ class ModHandler extends Handler {
         );
     }
 
-    async handleKick(ctx, message, isPurge = false) {
+    async handleKick(ctx, message, deleteCommand, deleteTarget) {
         try {
             await ctx.tg.banChatMember(
                 ctx.chat.id,
@@ -96,8 +96,11 @@ class ModHandler extends Handler {
                 message.reply_to_message.from.id
             );
 
-            if (isPurge) {
+            if (deleteTarget) {
                 await ctx.tg.deleteMessage(ctx.chat.id, message.reply_to_message.message_id);
+            }
+
+            if (deleteCommand) {
                 await ctx.tg.deleteMessage(ctx.chat.id, message.message_id);
             } else {
                 await ctx.tg.setMessageReaction(
@@ -126,7 +129,7 @@ class ModHandler extends Handler {
                 message.reply_to_message.from.id,
                 duration
             );
-            
+
             if (commandConfig.deleteTarget) {
                 await ctx.tg.deleteMessage(ctx.chat.id, message.reply_to_message.message_id);
             }
@@ -182,9 +185,11 @@ class ModHandler extends Handler {
 
             await this.executeModCommand(ctx, message, match.groups.command, duration);
         } else if (message.text.includes("!kick")) {
-            await this.handleKick(ctx, message, false);
+            await this.handleKick(ctx, message, false, false);
         } else if (message.text.includes("!pkick")) {
-            await this.handleKick(ctx, message, true);
+            await this.handleKick(ctx, message, true, true);
+        } else if (message.text.includes("!skick")) {
+            await this.handleKick(ctx, message, true, false)
         }
     }
 }
