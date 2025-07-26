@@ -45,7 +45,7 @@ class BadwordHandler extends Handler {
                     // Another one of those markers of unsolicited opinions
                     /missing feature/i.test(message.text),
                     // More markers of default communication
-                    /(hello|hi|hey) (dear )?(valetudo )?(community|everyone|team|all|friends|people)/i.test(message.text),
+                    /(hello|hi|hey) (dear )?(valetudo )?(community|team|friends|people)/i.test(message.text),
                     // /anyone (has|have|here|tried|tries|ever|knows|know)/i.test(message.text), // Disabled due to false positives
                     // No hello
                     /^(hello|hi|hey)\s*(community|everyone|team|all|friends|friend|people)?$/i.test(message.text)
