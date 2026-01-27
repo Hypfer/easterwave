@@ -30,6 +30,8 @@ class BadwordHandler extends Handler {
                 [
                     // messages or paragraphs ending with an ellipsis to let everyone know just how unhappy the user is about something
                     /(\.{3,}|…)(\n|$)/.test(message.text),
+                    // Some more passive aggressiveness (though can be a generational thing, but usually isn't)
+                    /(😉|;\))(\n|$)/.test(message.text),
                     // messages containing two or more tears of joy emoji in a row. 100% idiot marker
                     /([😂🤣]){2,}/u.test(message.text),
                     // People not using any punctuation at all are unpleasant to read
