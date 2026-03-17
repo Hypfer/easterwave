@@ -34,6 +34,10 @@ class BadwordHandler extends Handler {
                     /(😉|;\))(\n|$)/.test(message.text),
                     // messages containing two or more tears of joy emoji in a row. 100% idiot marker
                     /([😂🤣]){2,}/u.test(message.text),
+                    // messages or paragraphs ending with the see-no-evil emoji. Mild case but still annoying
+                    /🙈(\n|$)/u.test(message.text),
+                    // messages or paragraphs ending with fake niceness cranked up to 11
+                    /😊(\n|$)/u.test(message.text),
                     // People not using any punctuation at all are unpleasant to read
                     isVoiceInput(message.text),
                     // Zalgo-style stacked diacritics trying to escape the boundary of the message and rendering on top of others
