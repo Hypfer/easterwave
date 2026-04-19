@@ -5,6 +5,7 @@ import FunHandler from "./handlers/fun/FunHandler.js";
 import BadwordHandler from "./handlers/badword/BadwordHandler.js";
 import UserHandler from "./handlers/user/UserHandler.js";
 import NonsenseHandler from "./handlers/nonsense/NonsenseHandler.js";
+import WeirdnessHandler from "./handlers/weirdness/WeirdnessHandler.js";
 import Counter from "./util/Counter.js";
 
 if (!process.env.BOT_TOKEN) {
@@ -88,6 +89,7 @@ async function initializeBot() {
         new LangHandler({uidWhitelist: uidWhitelist, nonsenseCounter: nonsenseCounter}),
         new FunHandler({nonsenseCounter: nonsenseCounter}),
         new BadwordHandler({uidWhitelist: uidWhitelist, nonsenseCounter: nonsenseCounter}),
+        new WeirdnessHandler({}),
         new NonsenseHandler({nonsenseCounter: nonsenseCounter})
     ];
 
