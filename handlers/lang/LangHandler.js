@@ -40,7 +40,7 @@ class LangHandler extends Handler {
             message?.from?.id?.toString() !== undefined &&
             this.uidWhitelist.includes(message.from.id.toString())
         ) {
-            return;
+            return false;
         }
 
         if (!this.bouncer.check(text)) {
@@ -67,6 +67,7 @@ class LangHandler extends Handler {
             } catch(e) {
                 console.warn(`${new Date().toISOString()} - Error while deleting message`, e);
             }
+            return true;
         }
     }
 }

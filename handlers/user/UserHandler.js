@@ -98,6 +98,7 @@ class UserHandler extends Handler {
                     });
                 }, 30_000);
             }
+            return true;
         } else {
             if (message.from) {
                 if (userIsInvalid(message.from)) {
@@ -117,6 +118,7 @@ class UserHandler extends Handler {
                     } catch(e) {
                         console.warn(`${new Date().toISOString()} - Error while ensuring community standards`, e);
                     }
+                    return true;
                 } else if (message.from.username === "Channel_Bot") {
                     // That weird telegram premium feature allowing users to hide behind channel identities
                     try {
@@ -128,9 +130,12 @@ class UserHandler extends Handler {
                     }
                     
                     this.nonsenseCounter.increment();
+                    return true;
                 }
             }
         }
+
+        return false;
     }
 
     async evaluateAntiflood(ctx) {

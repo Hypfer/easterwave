@@ -1,7 +1,7 @@
 class Handler {
     /**
      * @param {any} ctx
-     * @returns {void}
+     * @returns {Promise<boolean>} resolves to `true` if the handler took action and the pipeline should abort, `false` otherwise
      */
     async handleMessage(ctx) {
         throw new Error("Not Implemented");

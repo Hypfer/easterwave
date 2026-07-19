@@ -27,8 +27,11 @@ class WeirdnessHandler extends Handler {
                 } catch(e) {
                     console.warn(`${new Date().toISOString()} - Error while cleaning up`, e);
                 }
+                return true;
             }
         }
+
+        return false;
     }
 }
 

@@ -87,22 +87,33 @@ async function initializeBot() {
     );
 
     const handlers = [
+        new EphemeralReplyHandler(botInfo.id),
         new UserHandler({uidWhitelist: uidWhitelist, nonsenseCounter: nonsenseCounter}),
         new ModHandler({uidWhitelist: uidWhitelist, federation: federation, nonsenseCounter: nonsenseCounter}),
         new LangHandler({uidWhitelist: uidWhitelist, nonsenseCounter: nonsenseCounter}),
         new BadwordHandler({uidWhitelist: uidWhitelist, nonsenseCounter: nonsenseCounter}),
         new WeirdnessHandler({}),
-        new NonsenseHandler({nonsenseCounter: nonsenseCounter}),
-        new EphemeralReplyHandler(botInfo.id)
+        new NonsenseHandler({nonsenseCounter: nonsenseCounter})
     ];
 
     // noinspection JSCheckFunctionSignatures
-    bot.on(["message", "edited_message"], (ctx) => {
-        Promise.all(
-            handlers.map(handler => handler.handleMessage(ctx))
-        ).catch(err => {
-            console.warn(`${new Date().toISOString()} - Error while handling message`, err);
-        });
+    bot.on(["message", "edited_message"], async (ctx) => {
+        for (const handler of handlers) {
+            try {
+                const handled = await handler.handleMessage(ctx);
+
+                // If the handler took action (returned true), short-circuit the pipeline
+                if (handled) {
+                    return;
+                }
+            } catch (err) {
+                const handlerName = handler.constructor.name || "UnknownHandler";
+                console.error(`${new Date().toISOString()} - Error in ${handlerName}:`, err);
+
+                // We intentionally don't return here.
+                // If one handler crashes, we log it and let the next handlers in the chain try.
+            }
+        }
     });
 
     await bot.launch();

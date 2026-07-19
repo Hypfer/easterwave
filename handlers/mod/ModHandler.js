@@ -174,7 +174,7 @@ class ModHandler extends Handler {
                 typeof message?.text === "string" &&
                 message.reply_to_message?.from?.id !== undefined)
         ) {
-            return;
+            return false;
         }
 
         const match = MOD_COMMAND_REGEX.exec(message.text);
@@ -184,13 +184,19 @@ class ModHandler extends Handler {
             const duration = parseInt(match.groups.duration) * multiplier;
 
             await this.executeModCommand(ctx, message, match.groups.command, duration);
+            return true;
         } else if (message.text.includes("!kick")) {
             await this.handleKick(ctx, message, false, false);
+            return true;
         } else if (message.text.includes("!pkick")) {
             await this.handleKick(ctx, message, true, true);
+            return true;
         } else if (message.text.includes("!skick")) {
-            await this.handleKick(ctx, message, true, false)
+            await this.handleKick(ctx, message, true, false);
+            return true;
         }
+
+        return false;
     }
 }
 

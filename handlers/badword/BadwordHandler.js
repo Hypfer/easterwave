@@ -116,20 +116,20 @@ class BadwordHandler extends Handler {
         const text = message?.text || message?.caption;
 
         if (typeof text !== "string") {
-            return;
+            return false;
         }
 
         const reason = getBadwordReason(text);
 
         if (!reason) {
-            return;
+            return false;
         }
 
         if (
             message?.from?.id?.toString() !== undefined &&
             this.uidWhitelist.includes(message.from.id.toString())
         ) {
-            return;
+            return false;
         }
 
         try {
@@ -146,6 +146,7 @@ class BadwordHandler extends Handler {
         }
 
         this.nonsenseCounter.increment();
+        return true;
     }
 }
 

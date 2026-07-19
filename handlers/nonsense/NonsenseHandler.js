@@ -81,7 +81,10 @@ class NonsenseHandler extends Handler {
             } catch (e) {
                 console.warn(`${new Date().toISOString()} - Error while executing nonsense command`, e);
             }
+            return true;
         }
+
+        return false;
     }
 }
 
