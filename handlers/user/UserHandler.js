@@ -4,7 +4,19 @@ import {sleep} from "../../util/tools.js";
 function formatNewMemberMuteReply() {
     return `To improve SNR, you have been muted for 3 minutes post-join.
 
-You can use this short downtime to ensure that the first message you post is a great one that has the potential to receive an equally great reply.`;
+You can use this short downtime to ensure that the first message you post is a great one that has the potential to receive an equally great reply.
+
+
+Quick heads-up:
+To establish a secure perimeter and safe haven (from the cloud) within the hellworld that is current-year consumer electronics, moderation operates like a rather unforgivingly configured IDS.
+Think fail2ban but extra spicy and paranoid.
+
+This means that if traffic gets matched by a known signature, the connection gets killed - with masking a signature also being a known signature, for that matter.
+Normal traffic should be unaffected by this.
+
+The code of this automod bot is open source and can be found at: https://github.com/Hypfer/easterwave
+The philosophy of this space is open source and can be found at: https://valetudo.cloud
+`;
 }
 
 class UserHandler extends Handler {
