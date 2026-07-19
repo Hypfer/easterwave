@@ -1,6 +1,15 @@
 import Handler from "../Handler.js";
 import Bouncer from "./Bouncer.js";
 
+function formatLangBounceReply(detectionLines) {
+    return `This chat is English only. Your previous message was automatically deleted because the naive statistical classifiers used thought that it might not be that.
+
+Detection results:
+${detectionLines}
+
+The code of this automod bot is open source and can be found at: https://github.com/Hypfer/easterwave`;
+}
+
 class LangHandler extends Handler {
     /**
      *
@@ -27,7 +36,10 @@ class LangHandler extends Handler {
             text = message.caption;
         }
 
-        if (this.uidWhitelist.includes(message?.from?.id?.toString())) {
+        if (
+            message?.from?.id?.toString() !== undefined &&
+            this.uidWhitelist.includes(message.from.id.toString())
+        ) {
             return;
         }
 
@@ -36,6 +48,21 @@ class LangHandler extends Handler {
                 console.log(`${new Date().toISOString()} - Deleting message with text "${text}"`);
 
                 await ctx.tg.deleteMessage(ctx.chat.id, message.message_id)
+
+                const detections = this.bouncer.getDetections(text);
+                const detectionLines = detections.map(d => {
+                    const top = d.detections.slice(0, 3);
+                    const details = top.map(det => `${det.lang} (${(det.accuracy * 100).toFixed(1)}%)`).join(", ");
+                    return `${d.classifier}: ${details}`;
+                }).join("\n");
+
+                // noinspection JSCheckFunctionSignatures
+                await ctx.tg.sendMessage(
+                    ctx.chat.id,
+                    formatLangBounceReply(detectionLines),
+                    { receiver_user_id: message.from.id }
+                );
+
                 this.nonsenseCounter.increment();
             } catch(e) {
                 console.warn(`${new Date().toISOString()} - Error while deleting message`, e);

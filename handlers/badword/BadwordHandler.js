@@ -8,6 +8,95 @@ import Handler from "../Handler.js";
  * At the very least, people playing taboo with the filter could end up with interesting linguistic results
  */
 
+const BAD_PATTERNS = [
+    {
+        reason: "Possibly passive-aggressive and/or emotional metadata embedded in message",
+        patterns: [
+            // messages or paragraphs ending with an ellipsis to let everyone know just how unhappy the user is about something
+            /(\.{3,}|…)(\n|$)/,
+            // some more passive aggressiveness (though can be a generational thing, but usually isn't)
+            /(😉|;\))(\n|$)/,
+            // messages or paragraphs ending with the see-no-evil emoji. Mild case but still annoying
+            /🙈(\n|$)/u,
+            // messages or paragraphs ending with fake niceness cranked up to 11
+            /😊(\n|$)/u,
+        ]
+    },
+    {
+        reason: "/([😂🤣]){2,}/",
+        patterns: [
+            // messages containing two or more tears of joy emoji in a row. 100% idiot marker
+            /([😂🤣]){2,}/u,
+        ]
+    },
+    {
+        reason: "Unstructured stream-of-consciousness",
+        patterns: [
+            // people not using any punctuation at all are unpleasant to read
+            (text) => isVoiceInput(text),
+        ]
+    },
+    {
+        reason: "Zalgo-style stacked diacritics",
+        patterns: [
+            // Zalgo-style stacked diacritics trying to escape the boundary of the message and rendering on top of others
+            /\p{M}{5,}/u,
+        ]
+    },
+    {
+        reason: "Asking for unsupported robots",
+        patterns: [
+            // people do not stop asking for these even _after_ having read the docs explicitly stating that they should not be asking for these or any other robots
+            /qrevo|maxv|switchbot|saros|eufy/i,
+        ]
+    },
+    {
+        reason: "Unsolicited unqualified opinions",
+        patterns: [
+            // another one of those markers of unsolicited opinions
+            /missing feature/i,
+        ]
+    },
+    {
+        reason: "Default communication boilerplate",
+        patterns: [
+            // more markers of default communication
+            /(hello|hi|hey) (dear )?(valetudo )?(community|team|friends|people)/i,
+            // disabled due to false positives: /anyone (has|have|here|tried|tries|ever|knows|know)/i,
+            // no hello
+            /^(hello|hi|hey)\s*(community|everyone|team|all|friends|friend|people)?$/i,
+        ]
+    },
+    {
+        reason: "Your identity is not relevant here",
+        patterns: [
+            // irrelevant metadata/label attached to a message. Usually in hopes of masking the actual payload that happens to be breaking rules/culture/etc.
+            /\b(newbie|newby)\b/i,
+            /\b(i am|i'm|i’m|im) new here\b/i,
+        ]
+    },
+];
+
+function formatBadwordReply(reason) {
+    return `Your previous message was automatically deleted.
+
+Reason:
+${reason}
+
+The code of this automod bot is open source and can be found at: https://github.com/Hypfer/easterwave`;
+}
+
+function getBadwordReason(text) {
+    for (const entry of BAD_PATTERNS) {
+        for (const pattern of entry.patterns) {
+            if (pattern instanceof RegExp ? pattern.test(text) : pattern(text)) {
+                return entry.reason;
+            }
+        }
+    }
+    return null;
+}
+
 class BadwordHandler extends Handler {
     /**
      *
@@ -24,54 +113,39 @@ class BadwordHandler extends Handler {
 
     async handleMessage(ctx) {
         const message = ctx.update.message || ctx.update.edited_message;
+        const text = message?.text || message?.caption;
 
-        if (typeof message?.text === "string") {
-            if (
-                [
-                    // messages or paragraphs ending with an ellipsis to let everyone know just how unhappy the user is about something
-                    /(\.{3,}|…)(\n|$)/.test(message.text),
-                    // Some more passive aggressiveness (though can be a generational thing, but usually isn't)
-                    /(😉|;\))(\n|$)/.test(message.text),
-                    // messages containing two or more tears of joy emoji in a row. 100% idiot marker
-                    /([😂🤣]){2,}/u.test(message.text),
-                    // messages or paragraphs ending with the see-no-evil emoji. Mild case but still annoying
-                    /🙈(\n|$)/u.test(message.text),
-                    // messages or paragraphs ending with fake niceness cranked up to 11
-                    /😊(\n|$)/u.test(message.text),
-                    // People not using any punctuation at all are unpleasant to read
-                    isVoiceInput(message.text),
-                    // Zalgo-style stacked diacritics trying to escape the boundary of the message and rendering on top of others
-                    /\p{M}{5,}/u.test(message.text),
-                    // People do not stop asking for these even _after_ having read the docs explicitly stating that they should not be asking for these or any other robots
-                    /qrevo|maxv|switchbot|saros|eufy/i.test(message.text),
-                    // Another one of those markers of unsolicited opinions
-                    /missing feature/i.test(message.text),
-                    // More markers of default communication
-                    /(hello|hi|hey) (dear )?(valetudo )?(community|team|friends|people)/i.test(message.text),
-                    // /anyone (has|have|here|tried|tries|ever|knows|know)/i.test(message.text), // Disabled due to false positives
-                    // No hello
-                    /^(hello|hi|hey)\s*(community|everyone|team|all|friends|friend|people)?$/i.test(message.text),
-                    // Irrelevant Metadata/label attached to a message. Usually in hopes of masking the actual payload that happens to be breaking rules/culture/etc.
-                    /\b(newbie|newby)\b/i.test(message.text),
-                    /\b(i am|i'm|i’m|im) new here\b/i.test(message.text),
-                ].includes(true)
-            ) {
-                if (
-                    message?.from?.id?.toString() !== undefined &&
-                    this.uidWhitelist.includes(message.from.id.toString())
-                ) {
-                    return;
-                }
-
-                try {
-                    await ctx.tg.deleteMessage(ctx.chat.id, message.message_id);
-                } catch(e) {
-                    console.warn(`${new Date().toISOString()} - Error while ensuring community standards`, e);
-                }
-
-                this.nonsenseCounter.increment();
-            }
+        if (typeof text !== "string") {
+            return;
         }
+
+        const reason = getBadwordReason(text);
+
+        if (!reason) {
+            return;
+        }
+
+        if (
+            message?.from?.id?.toString() !== undefined &&
+            this.uidWhitelist.includes(message.from.id.toString())
+        ) {
+            return;
+        }
+
+        try {
+            await ctx.tg.deleteMessage(ctx.chat.id, message.message_id);
+
+            // noinspection JSCheckFunctionSignatures
+            await ctx.tg.sendMessage(
+                ctx.chat.id,
+                formatBadwordReply(reason),
+                { receiver_user_id: message.from.id }
+            );
+        } catch(e) {
+            console.warn(`${new Date().toISOString()} - Error while ensuring community standards`, e);
+        }
+
+        this.nonsenseCounter.increment();
     }
 }
 

@@ -1,6 +1,12 @@
 import Handler from "../Handler.js";
 import {sleep} from "../../util/tools.js";
 
+function formatNewMemberMuteReply() {
+    return `To improve SNR, you have been muted for 3 minutes post-join.
+
+You can use this short downtime to ensure that the first message you post is a great one that has the potential to receive an equally great reply.`;
+}
+
 class UserHandler extends Handler {
     /**
      *
@@ -46,6 +52,13 @@ class UserHandler extends Handler {
                             {
                                 until_date: Math.floor(Date.now()/1000) + 3 * 60
                             }
+                        );
+
+                        // noinspection JSCheckFunctionSignatures
+                        await ctx.tg.sendMessage(
+                            ctx.chat.id,
+                            formatNewMemberMuteReply(),
+                            { receiver_user_id: member.id }
                         );
                     }
                 } else {

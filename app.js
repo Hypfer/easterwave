@@ -102,7 +102,10 @@ async function initializeBot() {
         });
     });
 
-    bot.launch();
+    const botInfo = await bot.telegram.getMe();
+    console.log(`Starting bot: ${botInfo.first_name} (@${botInfo.username})`);
+
+    await bot.launch();
 
     // Enable graceful stop
     process.once('SIGINT', () => bot.stop('SIGINT'));

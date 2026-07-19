@@ -2,16 +2,24 @@ import Classifier from "./Classifier.js";
 import { eld } from 'eld'
 
 class EldClassifier extends Classifier {
-    isEnglish(str) {
+    getName() {
+        return "Eld";
+    }
+
+    detect(str) {
         const detection = eld.detect(str);
         const scores = detection.getScores();
         
-        const classification = Object.entries(scores).map(([lang, accuracy]) => {
+        return Object.entries(scores).map(([lang, accuracy]) => {
             return {
                 lang: lang,
                 accuracy: accuracy
             }
-        })
+        });
+    }
+
+    isEnglish(str) {
+        const classification = this.detect(str);
 
         if (classification.filter(e => e.accuracy > 0.5).length > 0) {
             const english = classification.find(e => e.lang === "en");

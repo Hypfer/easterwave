@@ -8,13 +8,21 @@ class LanguageDetectClassifier extends Classifier {
         this.lngDetector = new LanguageDetect();
     }
 
-    isEnglish(str) {
-        const classification = this.lngDetector.detect(str).map(([lang, accuracy]) => {
+    getName() {
+        return "LanguageDetect";
+    }
+
+    detect(str) {
+        return this.lngDetector.detect(str).map(([lang, accuracy]) => {
             return {
                 lang: lang,
                 accuracy: accuracy
             }
         });
+    }
+    
+    isEnglish(str) {
+        const classification = this.detect(str);
         
         if (classification.filter(e => e.accuracy > 0.2).length > 0) {
             const english = classification.find(e => e.lang === "english");
