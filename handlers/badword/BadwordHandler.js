@@ -50,7 +50,10 @@ class BadwordHandler extends Handler {
                     /(hello|hi|hey) (dear )?(valetudo )?(community|team|friends|people)/i.test(message.text),
                     // /anyone (has|have|here|tried|tries|ever|knows|know)/i.test(message.text), // Disabled due to false positives
                     // No hello
-                    /^(hello|hi|hey)\s*(community|everyone|team|all|friends|friend|people)?$/i.test(message.text)
+                    /^(hello|hi|hey)\s*(community|everyone|team|all|friends|friend|people)?$/i.test(message.text),
+                    // Irrelevant Metadata/label attached to a message. Usually in hopes of masking the actual payload that happens to be breaking rules/culture/etc.
+                    /\b(newbie|newby)\b/i.test(message.text),
+                    /\b(i am|i'm|i’m|im) new here\b/i.test(message.text),
                 ].includes(true)
             ) {
                 if (
