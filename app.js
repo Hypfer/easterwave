@@ -6,6 +6,7 @@ import BadwordHandler from "./handlers/badword/BadwordHandler.js";
 import UserHandler from "./handlers/user/UserHandler.js";
 import NonsenseHandler from "./handlers/nonsense/NonsenseHandler.js";
 import WeirdnessHandler from "./handlers/weirdness/WeirdnessHandler.js";
+import EphemeralReplyHandler from "./handlers/ephemeral/EphemeralReplyHandler.js";
 import Counter from "./util/Counter.js";
 
 if (!process.env.BOT_TOKEN) {
@@ -78,6 +79,9 @@ const nonsenseCounter = new Counter();
 
 // Initialize federation and handlers
 async function initializeBot() {
+    const botInfo = await bot.telegram.getMe();
+    console.log(`Starting bot: ${botInfo.first_name} (@${botInfo.username})`);
+
     const federation = await validateFederation(
         bot,
         parseFederationIds(process.env.FEDERATION)
@@ -90,7 +94,8 @@ async function initializeBot() {
         new FunHandler({nonsenseCounter: nonsenseCounter}),
         new BadwordHandler({uidWhitelist: uidWhitelist, nonsenseCounter: nonsenseCounter}),
         new WeirdnessHandler({}),
-        new NonsenseHandler({nonsenseCounter: nonsenseCounter})
+        new NonsenseHandler({nonsenseCounter: nonsenseCounter}),
+        new EphemeralReplyHandler(botInfo.id)
     ];
 
     // noinspection JSCheckFunctionSignatures
@@ -101,9 +106,6 @@ async function initializeBot() {
             console.warn(`${new Date().toISOString()} - Error while handling message`, err);
         });
     });
-
-    const botInfo = await bot.telegram.getMe();
-    console.log(`Starting bot: ${botInfo.first_name} (@${botInfo.username})`);
 
     await bot.launch();
 
