@@ -1,7 +1,6 @@
 import telegraf from "telegraf";
 import LangHandler from "./handlers/lang/LangHandler.js";
 import ModHandler from "./handlers/mod/ModHandler.js";
-import FunHandler from "./handlers/fun/FunHandler.js";
 import BadwordHandler from "./handlers/badword/BadwordHandler.js";
 import UserHandler from "./handlers/user/UserHandler.js";
 import NonsenseHandler from "./handlers/nonsense/NonsenseHandler.js";
@@ -91,7 +90,6 @@ async function initializeBot() {
         new UserHandler({uidWhitelist: uidWhitelist, nonsenseCounter: nonsenseCounter}),
         new ModHandler({uidWhitelist: uidWhitelist, federation: federation, nonsenseCounter: nonsenseCounter}),
         new LangHandler({uidWhitelist: uidWhitelist, nonsenseCounter: nonsenseCounter}),
-        new FunHandler({nonsenseCounter: nonsenseCounter}),
         new BadwordHandler({uidWhitelist: uidWhitelist, nonsenseCounter: nonsenseCounter}),
         new WeirdnessHandler({}),
         new NonsenseHandler({nonsenseCounter: nonsenseCounter}),
