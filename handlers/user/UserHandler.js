@@ -14,6 +14,9 @@ Think fail2ban but extra spicy and paranoid.
 This means that if traffic gets matched by a known signature, the connection gets killed - with masking a signature also being a known signature, for that matter.
 Normal traffic should be unaffected by this.
 
+If this sounds intimidating - don't worry. You won't have to stop being human.
+Just be a good non-performative example of one.
+
 The code of this automod bot is open source and can be found at: https://github.com/Hypfer/easterwave
 The philosophy of this space is open source and can be found at: https://valetudo.cloud
 `;
@@ -28,10 +31,10 @@ class UserHandler extends Handler {
      */
     constructor(options) {
         super();
-        
+
         this.uidWhitelist = options.uidWhitelist;
         this.nonsenseCounter = options.nonsenseCounter;
-        
+
         this.antifloodCache = [];
         this.antifloodTimeout = undefined;
     }
@@ -123,12 +126,12 @@ class UserHandler extends Handler {
                     // That weird telegram premium feature allowing users to hide behind channel identities
                     try {
                         await ctx.tg.deleteMessage(ctx.chat.id, message.message_id);
-                        
+
                         // We can't ban them because we don't know who they are :|
                     } catch(e) {
                         console.warn(`${new Date().toISOString()} - Error while ensuring community standards`, e);
                     }
-                    
+
                     this.nonsenseCounter.increment();
                     return true;
                 }
