@@ -55,6 +55,23 @@ const BAD_PATTERNS = [
         patterns: [
             // another one of those markers of unsolicited opinions
             /missing feature/i,
+            /is there (?:a |any |some )?(?:particular )?reason/i,
+        ]
+    },
+    {
+        reason: "Possibly bargaining or looking for shortcuts",
+        patterns: [
+            /is there (?:any |an)?other way/i,
+            /is there (?:a|an|any) ?(?:other )?(?:easier way|trick|hack|workaround|shortcut|bypass)/i,
+        ]
+    },
+    {
+        reason: "Not a commercial project",
+        patterns: [
+            /are there any plans/i,
+            /is there a plan/i,
+            /is there any interest/i,
+            /the roadmap/i,
         ]
     },
     {
