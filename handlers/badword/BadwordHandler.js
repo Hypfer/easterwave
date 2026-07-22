@@ -51,6 +51,12 @@ const BAD_PATTERNS = [
         ]
     },
     {
+        reason: "Possible metaquestion with unclear intent",
+        patterns: [
+            /\baccept(ing|ed)?( (a|as a))? (pull[- ]request|pr)s?\b/i,
+        ]
+    },
+    {
         reason: "Unsolicited unqualified opinions",
         patterns: [
             // another one of those markers of unsolicited opinions
