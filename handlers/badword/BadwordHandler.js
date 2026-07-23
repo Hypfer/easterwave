@@ -78,6 +78,8 @@ const BAD_PATTERNS = [
             /is there a plan/i,
             /is there any interest/i,
             /the roadmap/i,
+            /\b(is|are)(?:\s+\S+){1,4}\s+planned(?:\s+\S+){0,3}\s*\?/i,
+            /\b(future plans|plans for the future)\b/i,
         ]
     },
     {
