@@ -44,6 +44,12 @@ const BAD_PATTERNS = [
         ]
     },
     {
+        reason: "Possibly AI-generated text",
+        patterns: [
+            /—/, // No human in existence uses the em dash in a casual telegram chat
+        ]
+    },
+    {
         reason: "Asking for unsupported robots",
         patterns: [
             // people do not stop asking for these even _after_ having read the docs explicitly stating that they should not be asking for these or any other robots
