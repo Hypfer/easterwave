@@ -108,6 +108,13 @@ const BAD_PATTERNS = [
             /\b(i am|i'm|i’m|im|i m) new to(?: all)?(?: of)? this\b/i
         ]
     },
+    {
+        reason: "Possible meta-question/hedging",
+        patterns: [
+            /the right place to ask/i,
+            /the right place to (seek|get) (help|support)/i,
+        ]
+    }
 ];
 
 function formatBadwordReply(reason) {
