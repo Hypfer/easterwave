@@ -109,10 +109,24 @@ const BAD_PATTERNS = [
         ]
     },
     {
-        reason: "Possible meta-question/hedging",
+        reason: "Possible meta-question",
         patterns: [
             /the right place to ask/i,
             /the right place to (seek|get) (help|support)/i,
+            /is it allowed to ask/i
+        ]
+    },
+    {
+        reason: "Contradictory request metadata",
+        patterns: [
+            /(i am|i'm|i’m|im|i m) sorry to bother you/i,
+            /(breaking|break) any rules/i
+        ]
+    },
+    {
+        reason: "Artificially collapsed solution space",
+        patterns: [
+            /my only (other )?option/i
         ]
     }
 ];
