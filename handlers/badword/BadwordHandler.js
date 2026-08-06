@@ -103,7 +103,8 @@ const BAD_PATTERNS = [
         patterns: [
             // irrelevant metadata/label attached to a message. Usually in hopes of masking the actual payload that happens to be breaking rules/culture/etc.
             /\b(newbie|newby)\b/i,
-            /\b(i am|i'm|i’m|im) new here\b/i,
+            /\b(i am|i'm|i’m|im|i m) new here\b/i,
+            /\b(i am|i'm|i’m|im|i m) new to(?: all)?(?: of)? this\b/i
         ]
     },
 ];
