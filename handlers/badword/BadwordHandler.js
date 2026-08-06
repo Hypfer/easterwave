@@ -34,6 +34,7 @@ const BAD_PATTERNS = [
         patterns: [
             // people not using any punctuation at all are unpleasant to read
             (text) => isVoiceInput(text),
+            /[^\n]{600,}/
         ]
     },
     {
