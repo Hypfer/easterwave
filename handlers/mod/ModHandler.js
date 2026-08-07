@@ -3,6 +3,9 @@ import {sleep} from "../../util/tools.js";
 
 const MOD_COMMAND_REGEX = /!(?<command>mute|ban|pmute|pban|smute|sban)\s+(?<duration>\d+)\s*(?<multiplier>[hdwmy]?)/;
 
+const DM_MOD_COMMAND_REGEX = /!(?<command>mute|ban|pmute|pban|smute|sban)\s+(?<target>@\w+|\d+)\s+(?<duration>\d+)\s*(?<multiplier>[hdwmy]?)/;
+const DM_KICK_COMMAND_REGEX = /!(?<command>kick|pkick|skick)\s+(?<target>@\w+|\d+)/;
+
 const TIME_MULTIPLIERS = {
     h: 60 * 60,
     d: 60 * 60 * 24,
@@ -65,6 +68,102 @@ class ModHandler extends Handler {
         this.nonsenseCounter = options.nonsenseCounter;
     }
 
+    async resolveTargetUser(ctx, target) {
+        if (target.startsWith("@")) {
+            try {
+                const chat = await ctx.telegram.getChat(target);
+                if (chat?.id !== undefined) {
+                    return chat.id;
+                }
+            } catch (e) {
+                console.warn(`${new Date().toISOString()} - Could not resolve target user "${target}"`, e);
+                return null;
+            }
+        } else {
+            const numericId = parseInt(target);
+            if (!isNaN(numericId)) {
+                return numericId;
+            }
+        }
+
+        return null;
+    }
+
+    async handleDmCommand(ctx, message) {
+        if (typeof message?.text !== "string") {
+            return false;
+        }
+
+        const modMatch = DM_MOD_COMMAND_REGEX.exec(message.text);
+        if (modMatch) {
+            const targetUserId = await this.resolveTargetUser(ctx, modMatch.groups.target);
+
+            if (targetUserId === null) {
+                try {
+                    await ctx.tg.setMessageReaction(
+                        ctx.chat.id,
+                        message.message_id,
+                        [{type: "emoji", emoji: "👎"}],
+                        false
+                    );
+                } catch (e) {
+                    console.warn(`${new Date().toISOString()} - Error while reacting to command`, e);
+                }
+                return true;
+            }
+
+            const multiplier = TIME_MULTIPLIERS[modMatch.groups.multiplier] || TIME_MULTIPLIERS[''];
+            const duration = parseInt(modMatch.groups.duration) * multiplier;
+
+            try {
+                await ctx.tg.setMessageReaction(
+                    ctx.chat.id,
+                    message.message_id,
+                    [{type: "emoji", emoji: "🫡"}],
+                    false
+                );
+            } catch (e) {
+                console.warn(`${new Date().toISOString()} - Error while reacting to command`, e);
+            }
+            await this.executeDmModCommand(ctx, modMatch.groups.command, targetUserId, duration);
+            return true;
+        }
+
+        const kickMatch = DM_KICK_COMMAND_REGEX.exec(message.text);
+        if (kickMatch) {
+            const targetUserId = await this.resolveTargetUser(ctx, kickMatch.groups.target);
+
+            if (targetUserId === null) {
+                try {
+                    await ctx.tg.setMessageReaction(
+                        ctx.chat.id,
+                        message.message_id,
+                        [{type: "emoji", emoji: "👎"}],
+                        false
+                    );
+                } catch (e) {
+                    console.warn(`${new Date().toISOString()} - Error while reacting to command`, e);
+                }
+                return true;
+            }
+
+            try {
+                await ctx.tg.setMessageReaction(
+                    ctx.chat.id,
+                    message.message_id,
+                    [{type: "emoji", emoji: "🫡"}],
+                    false
+                );
+            } catch (e) {
+                console.warn(`${new Date().toISOString()} - Error while reacting to command`, e);
+            }
+            await this.handleDmKick(ctx, targetUserId);
+            return true;
+        }
+
+        return false;
+    }
+
     async restrictMember(ctx, chatId, userId, duration) {
         return ctx.tg.restrictChatMember(
             chatId,
@@ -81,6 +180,49 @@ class ModHandler extends Handler {
             userId,
             Math.floor(Date.now()/1000) + duration
         );
+    }
+
+    async executeDmModCommand(ctx, command, targetUserId, duration) {
+        const commandConfig = COMMANDS[command];
+        const actionFunc = commandConfig.action === 'restrict' ? this.restrictMember : this.banMember;
+
+        for (const fedId of this.federation) {
+            try {
+                await actionFunc(ctx, fedId, targetUserId, duration);
+            } catch (e) {
+                console.warn(
+                    `${new Date().toISOString()} - Federation action failed for ${fedId}:`,
+                    e
+                );
+            }
+            await sleep(1000);
+        }
+
+        this.nonsenseCounter.increment();
+    }
+
+    async handleDmKick(ctx, targetUserId) {
+        for (const fedId of this.federation) {
+            try {
+                await ctx.tg.banChatMember(
+                    fedId,
+                    targetUserId,
+                    Math.floor(Date.now()/1000) + 60
+                );
+                await ctx.tg.unbanChatMember(
+                    fedId,
+                    targetUserId
+                );
+            } catch (e) {
+                console.warn(
+                    `${new Date().toISOString()} - Federation action failed for ${fedId}:`,
+                    e
+                );
+            }
+            await sleep(1000);
+        }
+
+        this.nonsenseCounter.increment();
     }
 
     async handleKick(ctx, message, deleteCommand, deleteTarget) {
@@ -112,6 +254,26 @@ class ModHandler extends Handler {
             }
 
             this.nonsenseCounter.increment();
+
+            for (const fedId of this.federation.filter(fedId => fedId !== ctx.chat.id)) {
+                try {
+                    await ctx.tg.banChatMember(
+                        fedId,
+                        message.reply_to_message.from.id,
+                        Math.floor(Date.now()/1000) + 60
+                    );
+                    await ctx.tg.unbanChatMember(
+                        fedId,
+                        message.reply_to_message.from.id
+                    );
+                    await sleep(1000);
+                } catch (e) {
+                    console.warn(
+                        `${new Date().toISOString()} - Federation action failed for ${fedId}:`,
+                        e
+                    );
+                }
+            }
         } catch(e) {
             console.warn(`${new Date().toISOString()} - Error while executing kick command`, e);
         }
@@ -170,9 +332,18 @@ class ModHandler extends Handler {
 
         if (
             !(message?.from?.id?.toString() !== undefined &&
-                this.uidWhitelist.includes(message.from.id.toString()) &&
-                typeof message?.text === "string" &&
-                message.reply_to_message?.from?.id !== undefined)
+                this.uidWhitelist.includes(message.from.id.toString()))
+        ) {
+            return false;
+        }
+
+        if (ctx.chat?.type === "private") {
+            return this.handleDmCommand(ctx, message);
+        }
+
+        if (
+            !(typeof message?.text === "string" &&
+                message?.reply_to_message?.from?.id !== undefined)
         ) {
             return false;
         }
