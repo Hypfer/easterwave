@@ -26,7 +26,7 @@ class LangHandler extends Handler {
         this.bouncer = new Bouncer();
     }
 
-    async handleMessage(ctx) {
+    async handleMessage({ctx, metadata}) {
         const message = ctx.update.message || ctx.update.edited_message;
         let text;
 
@@ -67,6 +67,7 @@ class LangHandler extends Handler {
             } catch(e) {
                 console.warn(`${new Date().toISOString()} - Error while deleting message`, e);
             }
+            metadata.moderationActionTaken = true;
             return true;
         }
     }

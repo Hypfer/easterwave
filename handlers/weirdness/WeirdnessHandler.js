@@ -13,7 +13,7 @@ class WeirdnessHandler extends Handler {
         super();
     }
 
-    async handleMessage(ctx) {
+    async handleMessage({ctx}) {
         const message = ctx.update.message || ctx.update.edited_message;
 
         if (typeof message?.text === "string") {

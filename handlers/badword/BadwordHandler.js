@@ -165,7 +165,7 @@ class BadwordHandler extends Handler {
         this.nonsenseCounter = options.nonsenseCounter;
     }
 
-    async handleMessage(ctx) {
+    async handleMessage({ctx, metadata}) {
         const message = ctx.update.message || ctx.update.edited_message;
         const text = message?.text || message?.caption;
 
@@ -199,6 +199,7 @@ class BadwordHandler extends Handler {
             console.warn(`${new Date().toISOString()} - Error while ensuring community standards`, e);
         }
 
+        metadata.moderationActionTaken = true;
         this.nonsenseCounter.increment();
         return true;
     }

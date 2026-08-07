@@ -39,7 +39,7 @@ class UserHandler extends Handler {
         this.antifloodTimeout = undefined;
     }
 
-    async handleMessage(ctx) {
+    async handleMessage({ctx, metadata}) {
         const message = ctx.update.message || ctx.update.edited_message;
 
         if (Array.isArray(message?.new_chat_members)) {
@@ -58,6 +58,7 @@ class UserHandler extends Handler {
                             member.id
                         );
 
+                        (metadata.removedMemberIds ??= new Set()).add(member.id);
                         this.nonsenseCounter.increment();
                     } else {
                         // Mute every new member for a few minutes to encourage them to think before posting
@@ -88,6 +89,8 @@ class UserHandler extends Handler {
                             message.from.id,
                         );
 
+                        (metadata.removedMemberIds ??= new Set()).add(member.id);
+                        (metadata.removedMemberIds ??= new Set()).add(message.from.id);
                         this.nonsenseCounter.increment();
                     }
                 }

@@ -54,7 +54,7 @@ class NonsenseHandler extends Handler {
         this.nonsenseCounter = options.nonsenseCounter;
     }
 
-    async handleMessage(ctx) {
+    async handleMessage({ctx}) {
         const message = ctx.update.message || ctx.update.edited_message;
         let text;
 

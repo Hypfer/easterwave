@@ -23,7 +23,7 @@ class EphemeralReplyHandler extends Handler {
         this.botUserId = botUserId;
     }
 
-    async handleMessage(ctx) {
+    async handleMessage({ctx}) {
         const message = ctx.update.message;
 
         if (

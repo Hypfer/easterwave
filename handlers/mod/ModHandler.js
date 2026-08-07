@@ -327,7 +327,7 @@ class ModHandler extends Handler {
         }
     }
 
-    async handleMessage(ctx) {
+    async handleMessage({ctx}) {
         const message = ctx.update.message || ctx.update.edited_message;
 
         const senderId = message?.from?.id?.toString();
