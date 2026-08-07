@@ -330,10 +330,8 @@ class ModHandler extends Handler {
     async handleMessage(ctx) {
         const message = ctx.update.message || ctx.update.edited_message;
 
-        if (
-            !(message?.from?.id?.toString() !== undefined &&
-                this.uidWhitelist.includes(message.from.id.toString()))
-        ) {
+        const senderId = message?.from?.id?.toString();
+        if (senderId === undefined || !this.uidWhitelist.includes(senderId)) {
             return false;
         }
 
