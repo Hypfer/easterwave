@@ -1,10 +1,24 @@
 import {PostProcessor} from "../../handlers/Handler.js";
 
+/*
+    Telegram UIDs are a monotonically increasing int, so checking it against the newest one we saw tells us if it is a new account
+    That may not mean anything, but it may also mean tourist or burner account
+ */
 const NEW_ACCOUNT_TAG = "✦";
 
+/*
+    Contrary to what you see in a forum, this is not a "rank" but an ephemeral "new" indicator that eventually vanishes.
+    If you add ranks, you also add an incentive for people to do virtual dick measuring based on those ranks 
+    + all sorts of other in-group nonsense that harms SNR. 
+    
+    The goal is to have no tag and with that be normal.
+ */
 const ACTIVITY_LADDER = ["⟡", "⟐", "◈", "◆", "❖"];
 const ACTIVITY_PROGRESS_CHANCE = 0.4;
 
+/*
+    It should be obvious without manually checking the modlog that a user has been persistently hitting the automod
+ */
 const TRANSGRESSION_LADDER = ["⊙", "⊚", "⊖", "⊘", "⊗"];
 const TRANSGRESSION_DECAY_CHANCE = 0.3;
 
