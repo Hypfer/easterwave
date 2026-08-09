@@ -3,8 +3,8 @@ import {sleep} from "../../util/tools.js";
 
 const MOD_COMMAND_REGEX = /!(?<command>mute|ban|pmute|pban|smute|sban)\s+(?<duration>\d+)\s*(?<multiplier>[hdwmy]?)/;
 
-const DM_MOD_COMMAND_REGEX = /!(?<command>mute|ban|pmute|pban|smute|sban)\s+(?<target>@\w+|\d+)\s+(?<duration>\d+)\s*(?<multiplier>[hdwmy]?)/;
-const DM_KICK_COMMAND_REGEX = /!(?<command>kick|pkick|skick)\s+(?<target>@\w+|\d+)/;
+const DM_MOD_COMMAND_REGEX = /!(?<command>mute|ban|pmute|pban|smute|sban)\s+(?<target>\d+)\s+(?<duration>\d+)\s*(?<multiplier>[hdwmy]?)/;
+const DM_KICK_COMMAND_REGEX = /!(?<command>kick|pkick|skick)\s+(?<target>\d+)/;
 
 const TIME_MULTIPLIERS = {
     h: 60 * 60,
@@ -68,27 +68,6 @@ class ModHandler extends Handler {
         this.nonsenseCounter = options.nonsenseCounter;
     }
 
-    async resolveTargetUser(ctx, target) {
-        if (target.startsWith("@")) {
-            try {
-                const chat = await ctx.telegram.getChat(target);
-                if (chat?.id !== undefined) {
-                    return chat.id;
-                }
-            } catch (e) {
-                console.warn(`${new Date().toISOString()} - Could not resolve target user "${target}"`, e);
-                return null;
-            }
-        } else {
-            const numericId = parseInt(target);
-            if (!isNaN(numericId)) {
-                return numericId;
-            }
-        }
-
-        return null;
-    }
-
     async handleDmCommand(ctx, message) {
         if (typeof message?.text !== "string") {
             return false;
@@ -96,22 +75,7 @@ class ModHandler extends Handler {
 
         const modMatch = DM_MOD_COMMAND_REGEX.exec(message.text);
         if (modMatch) {
-            const targetUserId = await this.resolveTargetUser(ctx, modMatch.groups.target);
-
-            if (targetUserId === null) {
-                try {
-                    await ctx.tg.setMessageReaction(
-                        ctx.chat.id,
-                        message.message_id,
-                        [{type: "emoji", emoji: "👎"}],
-                        false
-                    );
-                } catch (e) {
-                    console.warn(`${new Date().toISOString()} - Error while reacting to command`, e);
-                }
-                return true;
-            }
-
+            const targetUserId = parseInt(modMatch.groups.target);
             const multiplier = TIME_MULTIPLIERS[modMatch.groups.multiplier] || TIME_MULTIPLIERS[''];
             const duration = parseInt(modMatch.groups.duration) * multiplier;
 
@@ -131,21 +95,7 @@ class ModHandler extends Handler {
 
         const kickMatch = DM_KICK_COMMAND_REGEX.exec(message.text);
         if (kickMatch) {
-            const targetUserId = await this.resolveTargetUser(ctx, kickMatch.groups.target);
-
-            if (targetUserId === null) {
-                try {
-                    await ctx.tg.setMessageReaction(
-                        ctx.chat.id,
-                        message.message_id,
-                        [{type: "emoji", emoji: "👎"}],
-                        false
-                    );
-                } catch (e) {
-                    console.warn(`${new Date().toISOString()} - Error while reacting to command`, e);
-                }
-                return true;
-            }
+            const targetUserId = parseInt(kickMatch.groups.target);
 
             try {
                 await ctx.tg.setMessageReaction(
