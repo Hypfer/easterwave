@@ -20,6 +20,7 @@ const BAD_PATTERNS = [
             /🙈(\n|$)/u,
             // messages or paragraphs ending with fake niceness cranked up to 11
             /😊(\n|$)/u,
+            /bummer/i,
         ]
     },
     {
