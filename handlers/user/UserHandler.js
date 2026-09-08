@@ -17,6 +17,10 @@ Normal traffic should be unaffected by this.
 If this sounds intimidating - don't worry. You won't have to stop being human.
 Just be a good non-performative example of one.
 
+Final note:
+When talking to other humans, make sure to exclusively use your own voice.
+No LLMs ghostwriting, summarizing, or otherwise standing in for you.
+
 The code of this automod bot is open source and can be found at: https://github.com/Hypfer/easterwave
 The philosophy of this space is open source and can be found at: https://valetudo.cloud
 `;
