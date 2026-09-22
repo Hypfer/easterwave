@@ -129,7 +129,31 @@ const BAD_PATTERNS = [
         patterns: [
             /my only (other )?option/i
         ]
-    }
+    },
+    {
+        /*
+            This rule even more than the others is hyper-specific to the smarthome and consumer electronics space.
+
+            It is also, admittedly, a very blunt instrument and will come with false positives by people that just organically reference their partner.
+            Fortunately, they can still do so by saying "my partner".
+
+            It should however hopefully stop grown men from hiding behind their poor wives when they complain about something.
+            Think: "So I do not have a problem with this, but my wife said/asked/nagged/complained"
+
+            Terrible.
+
+            I guess there is an argument to be made that these pairings form a sort of "superorganism", where each
+            node gets specialized, and, in that example, one node is specialized on handling all the emotional load.
+
+            But that's kinda shit? Fuck you stop living like that.
+            Or continue living like that but do so outside my house. I don't want to hear about your dysfunction.
+         */
+        reason: "Possibly offloading accountability to a third-party",
+        patterns: [
+            /my wife/i,
+            /waf/i
+        ]
+    },
 ];
 
 function formatBadwordReply(reason) {
