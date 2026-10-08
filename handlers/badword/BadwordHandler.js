@@ -82,7 +82,7 @@ const BAD_PATTERNS = [
     {
         reason: "Not a commercial project",
         patterns: [
-            /are there any plans/i,
+            /are there any (?:current |future |upcoming |known )?plans/i,
             /is there a plan/i,
             /is there any interest/i,
             /the roadmap/i,
