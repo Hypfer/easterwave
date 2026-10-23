@@ -20,6 +20,8 @@ const BAD_PATTERNS = [
             /🙈(\n|$)/u,
             // messages or paragraphs ending with fake niceness cranked up to 11
             /😊(\n|$)/u,
+            // "I'm going to do something I'm not supposed to, but I'm doing it anyway and lampshading will save me"
+            /😇(\n|$)/u,
             /bummer/i,
         ]
     },
@@ -82,7 +84,7 @@ const BAD_PATTERNS = [
     {
         reason: "Not a commercial project",
         patterns: [
-            /are there any (?:current |future |upcoming |known )?plans/i,
+            /are there any plans/i,
             /is there a plan/i,
             /is there any interest/i,
             /the roadmap/i,
