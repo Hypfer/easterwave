@@ -48,6 +48,11 @@ class UserHandler extends Handler {
         const message = ctx.update.message || ctx.update.edited_message;
 
         if (Array.isArray(message?.new_chat_members)) {
+            if (metadata.isEdit) {
+                console.log(`${new Date().toISOString()} - Ignoring edited join service message (members: ${message.new_chat_members.map(member => member.id).join(", ")}, date: ${message.date}, edit_date: ${message.edit_date})`);
+                return true;
+            }
+
             for (const member of message.new_chat_members) {
                 if (!member.is_bot) {
                     if (userIsInvalid(member)) {

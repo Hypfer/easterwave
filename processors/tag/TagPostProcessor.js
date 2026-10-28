@@ -40,6 +40,10 @@ class TagPostProcessor extends PostProcessor {
         const newChatMembers = message?.new_chat_members;
 
         if (Array.isArray(newChatMembers)) {
+            if (metadata.isEdit) {
+                return;
+            }
+
             for (const member of newChatMembers) {
                 if (member.is_bot) {
                     continue;
