@@ -57,7 +57,7 @@ const BAD_PATTERNS = [
         reason: "Asking for unsupported robots",
         patterns: [
             // people do not stop asking for these even _after_ having read the docs explicitly stating that they should not be asking for these or any other robots
-            /qrevo|maxv|switchbot|saros|eufy/i,
+            /qrevo|maxv|switchbot|saros|eufy|govac/i,
         ]
     },
     {
