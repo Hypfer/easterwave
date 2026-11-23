@@ -156,6 +156,14 @@ const BAD_PATTERNS = [
             /waf/i
         ]
     },
+    {
+        reason: "Hypothetical scenario",
+        patterns: [
+            /\b(?:plann?ing|plan|looking) to (?:buy|get)\b/i,
+            /\b(?:plann?ing|plan) on (?:buying|getting)\b/i,
+            /\bconsidering (?:to (?:buy|get)|buying|getting)\b/i
+        ]
+    },
 ];
 
 function formatBadwordReply(reason) {
