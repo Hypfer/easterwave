@@ -164,6 +164,12 @@ const BAD_PATTERNS = [
             /\bconsidering (?:to (?:buy|get)|buying|getting)\b/i
         ]
     },
+    {
+        reason: "Possibly offloading emotional load of ambiguity and uncertainty",
+        patterns: [
+            /\bcan i be sure\b/i,
+        ]
+    },
 ];
 
 function formatBadwordReply(reason) {
