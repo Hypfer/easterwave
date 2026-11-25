@@ -49,7 +49,7 @@ class UserHandler extends Handler {
 
         if (Array.isArray(message?.new_chat_members)) {
             if (metadata.isEdit) {
-                console.log(`${new Date().toISOString()} - Ignoring edited join service message (members: ${message.new_chat_members.map(member => member.id).join(", ")}, date: ${message.date}, edit_date: ${message.edit_date})`);
+                //console.log(`${new Date().toISOString()} - Ignoring edited join service message (members: ${message.new_chat_members.map(member => member.id).join(", ")}, date: ${message.date}, edit_date: ${message.edit_date})`);
                 return true;
             }
 
